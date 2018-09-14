@@ -1,4 +1,4 @@
-function subjects = OpBox_Graphs(subjects)
+function subjects = OpBoxPhys_Graphs(subjects)
 
 % Prep plots: Settings to plot data in "real-time"
 num_subj = numel(subjects);
@@ -12,7 +12,7 @@ num_peri = ceil(0.5 * subjects(1).Fs);
 % peri_end = ceil(0.5 * subjects(1).Fs); % for eps: peri time in sec * rate
 font_size = 8;
 
-[axes_time, axes_freq, axes_ep, axes_cam, figures] = OpBox_Axes(num_subj);
+[axes_time, axes_freq, axes_ep, axes_cam, figures] = OpBoxPhys_Axes(num_subj);
 set(figures(1), 'Name', 'OpBox')
 temp_ts = (1:subjects(1).Fs*num_sec_to_plot)/subjects(1).Fs; % in sec. Ends up as 1 rol, multiple cols
 

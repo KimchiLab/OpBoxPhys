@@ -1,7 +1,7 @@
 %%% PREPARATION OF SUBPLOTS %%%%%%%%%%%%%%%%%%%%%
-% function [grid_raster, grid_peth, figures] = AxesEEGs(total_rows, total_cols, raster_ratio, max_rows, max_cols);
+% function [grid_raster, grid_peth, figures] = OpBoxPhys_Axes(total_rows, total_cols, raster_ratio, max_rows, max_cols);
 % max_cols function is not currently working, need to be specified in total_cols, can adjust later to extend right over figures (in addition to down, which is already done)
-function [axes_time, axes_freq, axes_ep, axes_cam, figures] = OpBox_Axes(num_subj)
+function [axes_time, axes_freq, axes_ep, axes_cam, figures] = OpBoxPhys_Axes(num_subj)
 
 % Changes Text Interpreter so that 
 % underscores will print as underscores, rather than subcripts chars

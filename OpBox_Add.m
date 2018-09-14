@@ -13,7 +13,7 @@ if isempty(subj_info)
     return;
 end
 
-subj_names = OpBox_SubjectsNames(subj_info);
+subj_names = OpBoxPhys_SubjectsNames(subj_info);
 
 lh.draw.Enabled = false; % Turn off graphing listener handle during update
 
@@ -59,7 +59,7 @@ end
 if ~isempty(subjects)
     [~, sort_idx] = sort([subjects.box]);
     subjects = subjects(sort_idx);
-    subjects = OpBox_Graphs(subjects);
+    subjects = OpBoxPhys_Graphs(subjects);
 end
 
 %% Clear data & Change graphs/zoom (back) to default settings

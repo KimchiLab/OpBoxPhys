@@ -1,4 +1,4 @@
-function subj_names = OpBox_SubjectsNames(subj_info)
+function subj_names = OpBoxPhys_SubjectsNames(subj_info)
 
 if isfield(subj_info, 'group')
     groups = {subj_info.group};
