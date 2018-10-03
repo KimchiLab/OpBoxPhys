@@ -13,6 +13,7 @@ This software library uses NI-DAQ devices in Matlab to collect physiology and be
 ## Additional Functions
 * OpBox_Axis_Time: Change the axis for the display of temporal data
 * OpBox_ResetEP: Reset the evoked potentials being displayed
+* OpBoxPhys_LoadData: Load data collected in a prior session
 
 ## Acknowledgements
 
