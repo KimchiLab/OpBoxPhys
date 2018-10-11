@@ -24,7 +24,7 @@ if data.num_ch_digital
         data.idx_end = idx_end(idx_mask);
     end
 % If there is analog trial data, search for possible start & stop signals    
-elseif exist('ch_crop_analog', 'var') && ch_crop_analog > 0 && ch_crop_analog <= data.num_ch_analog
+elseif exist('ch_crop_analog', 'var') && ~isempty(ch_crop_analog) && ch_crop_analog > 0 && ch_crop_analog <= data.num_ch_analog
     num_events_beh = 5; % Number of event types multiplexed on this channel
     ch_trial = num_events_beh;
     mask_data = DiscHeadFixParseVoltBeh(data.analog(ch_crop_analog, :), num_events_beh)';

@@ -4,6 +4,7 @@
 %
 % .m file/function to load data from an OpBoxPhys .bin file
 % Filename format is Subject-Date-Time.bin
+% ch_crop_analog: Analog channel in which to look for cropping signals
 %
 % Returns a data structure with following fields (at least as of version 3 file)
 % data.filename: Name of file (does not include directory)
@@ -20,6 +21,10 @@
 % Version 3 incluees the ability to load counter data, e.g. position from treadmill
 
 function [data] = OpBoxPhys_LoadData(filename_bin, ch_crop_analog)
+
+if nargin < 2
+    ch_crop_analog = [];
+end
 
 % Load data
 data.filename = filename_bin;
