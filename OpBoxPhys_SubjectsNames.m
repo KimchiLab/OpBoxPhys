@@ -7,21 +7,23 @@ else
 end
 name_groups = unique(groups);
 
-fprintf('\nPossible subjects for room %s:\n', subj_info(1).room);
-if sum(~strcmpi(groups, ''))
-    fprintf('Groups:\n');
-    for i_group = 1:numel(name_groups)
-        if ~isempty(name_groups{i_group})
-            fprintf('%s: ', name_groups{i_group});
-            fprintf('%s, ', subj_info(strcmpi(groups, name_groups{i_group})).name);
-            fprintf('\n');
+if ~isempty(subj_info)
+    fprintf('\nPossible subjects for room %s:\n', subj_info(1).room);
+    if sum(~strcmpi(groups, ''))
+        fprintf('Groups:\n');
+        for i_group = 1:numel(name_groups)
+            if ~isempty(name_groups{i_group})
+                fprintf('%s: ', name_groups{i_group});
+                fprintf('%s, ', subj_info(strcmpi(groups, name_groups{i_group})).name);
+                fprintf('\n');
+            end
         end
     end
-end
-if sum(strcmpi(groups, ''))
-    fprintf('Ungrouped: ');
-    fprintf('%s ', subj_info(strcmpi(groups, '')).name);
-    fprintf('\n');
+    if sum(strcmpi(groups, ''))
+        fprintf('Ungrouped: ');
+        fprintf('%s ', subj_info(strcmpi(groups, '')).name);
+        fprintf('\n');
+    end
 end
 
 % Get group or subject names
@@ -42,7 +44,6 @@ for i_subj = 1:numel(subj_list)
             break;
         else
             % Consider adding and allowing user to specify box
-%             fprintf('Subject %s not recognized, would you like to add for current session?adding for current recording to default box.\n', subj_list{i_subj});
             fprintf('Subject %s not recognized, will try to add.\n', subj_list{i_subj});
             subj_names = [subj_names subj_list{i_subj}];
         end

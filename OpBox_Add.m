@@ -10,8 +10,14 @@ if isempty(box_info)
     fprintf('No box info found for room %s.\nPlease edit InfoBoxes.csv and add rooms or boxes.\n\n', room);
     return;
 end
-
+if isempty(subj_info)
+    fprintf('No subjects for room %s.\n', room);
+end
 subj_names = OpBoxPhys_SubjectsNames(subj_info);
+
+if isempty(subj_names)
+    fprintf('No subjects added.\n');
+end
 
 lh.draw.Enabled = false; % Turn off graphing listener handle during update
 
@@ -33,8 +39,7 @@ for i_subj = 1:numel(subj_names)
             new_subject = new_subject.FileName;
             % First set up camera if needed: Will take a little time before ready to save
             if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
-%                 new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Initialize camera & resolution
-                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
+                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution. Alternate format: MJPG_320x240
                 set(new_subject.cam, 'FramesPerTrigger', inf);
                 set(new_subject.cam, 'FramesAcquiredFcnCount', 30);  % Try to display roughly 1/sec. Can't guarantee frame rate?
                 
