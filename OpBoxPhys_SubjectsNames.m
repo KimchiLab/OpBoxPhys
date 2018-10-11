@@ -42,6 +42,7 @@ for i_subj = 1:numel(subj_list)
             break;
         else
             % Consider adding and allowing user to specify box
+%             fprintf('Subject %s not recognized, would you like to add for current session?adding for current recording to default box.\n', subj_list{i_subj});
             fprintf('Subject %s not recognized, will try to add.\n', subj_list{i_subj});
             subj_names = [subj_names subj_list{i_subj}];
         end

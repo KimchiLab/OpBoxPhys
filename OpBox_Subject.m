@@ -115,7 +115,6 @@ classdef OpBox_Subject
                 obj.nidev_digital = box_info(idx_b).nidev_digital;
                 obj.ch_digital = box_info(idx_b).ch_digital;
                 obj.ch_trigger = box_info(idx_b).ch_trigger;
-                obj.trigger_thresh = box_info(idx_b).trigger_thresh;
                 obj.ch_offset = box_info(idx_b).ch_offset;
                 obj.nidev_counter = box_info(idx_b).nidev_counter;
                 obj.ch_counter = box_info(idx_b).ch_counter;
@@ -180,11 +179,9 @@ classdef OpBox_Subject
             % If there is a trigger, set threshold as half of max range
             if ~isempty(obj.ch_trigger)
                 if obj.ch_trigger <= obj.num_analog
-                    if obj.trigger_thresh == 0
-                        temp_range = get(s_in.Channels(1).Range);
-                        obj.trigger_thresh = 0.5 * temp_range.Max;
-                    end
-                else % Digital channel
+                    volt_range = get(s_in.Channels(1).Range);
+                    obj.trigger_thresh = 0.5 * volt_range.Max;
+                else
                     obj.trigger_thresh = 1;
                 end
             end

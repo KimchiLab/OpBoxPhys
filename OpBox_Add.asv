@@ -7,7 +7,7 @@ box_info = box_info(strcmp({box_info.room}, room));
 subj_info = subj_info(strcmp({subj_info.room}, room));
 
 if isempty(box_info)
-    fprintf('No box info found for room %s.\nPlease edit InfoBoxes.csv and add rooms or boxes.\n\n', room);
+    fprintf('No box info found for room %s, please edit InfoBoxes.csv and add room or boxes to \n', room);
     return;
 end
 

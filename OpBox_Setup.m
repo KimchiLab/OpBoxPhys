@@ -40,7 +40,8 @@ clf;
 % Can't pass in as argument to function, 
 % needs to be declared global outside of function before use, 
 % hence script here rather than function
-room = 'TestRoom'; % Should be char/string
+% room = 'TestRoom'; % Should be char/string
+room = 'TyeHomeCageOpto'; % Should be char/string
 
 global subjects; % Need to declare before setting up listener handles
                  % Global so that listener handles can catch changes

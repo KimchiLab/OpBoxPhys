@@ -1,7 +1,7 @@
-function [s_in] = OpBoxPhys_DaqSetup(Fs)
+function [s_in] = OpBoxPhys_Setup(Fs)
 
 %% Default Parameters
-% Sampling rate, if none specified
+% Sampling rate if none specified
 if nargin < 1
     Fs = 1e3;
 end
@@ -22,7 +22,6 @@ s_in.Rate = Fs;
 s_in.IsContinuous = true;
 s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % In loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms
 
-% Track number of PCI devices
 num_pci_sync = 0; % If find 2 devices, then will sync later
 
 % initialize all channels from all devices
@@ -37,12 +36,12 @@ for i_dev = 1:numel(nidevs)
             analog_chans = [0:7, 16:23];
             digital_chans = '0:31';
             num_pci_sync = num_pci_sync + 1;
-            volt_range = 1; % PCIe-6323 : ±10 V, ±5 V, ±1 V, ±0.2 V: http://www.ni.com/pdf/manuals/370785d.pdf
+            volt_range = 1;
         case 'PCI-6225'
             analog_chans = [0:7, 16:23, 32:39, 48:55, 64:71];
             digital_chans = '0:7';
             num_pci_sync = num_pci_sync + 1;
-            volt_range = 1; % PCI-6255  : ±10 V, ±5 V, ±2 V, ±1 V, ±0.5 V, ±0.2 V, ±0.1 V: http://www.ni.com/datasheet/pdf/en/ds-22
+            volt_range = 1;
         case 'USB-6001'
             max_fs = 20e3;  % http://www.ni.com/pdf/manuals/371303n.pdf
             max_chans = 4;  % if bipolar/referential
@@ -52,7 +51,7 @@ for i_dev = 1:numel(nidevs)
             end
             analog_chans = 0:num_chans-1;
             % digital_chans = '';  % Digital channels are software clocked rather than hardware, so can not be streamed along with analog data
-            volt_range = 10; % USB-6001  : ±10 V, ONLY SUPPORTED AS OF MATLAB 2014B: http://www.mathworks.com/matlabcentral/answers/146228-is-it-possible-to-use-an-unsupported-daq-board
+            volt_range = 10;
         case 'USB-6009'
             max_fs = 48e3;  % http://www.ni.com/pdf/manuals/371303n.pdf
             max_chans = 4;  % if bipolar/referential
@@ -62,7 +61,7 @@ for i_dev = 1:numel(nidevs)
             end
             analog_chans = 0:num_chans-1;
             % digital_chans = '';  % Digital channels are software clocked rather than hardware, so can not be streamed along with analog data
-            volt_range = 1; % USB-6009  : ±20 V, ±10 V, ±5 V, ±4 V, ±2.5 V, ±2 V, ±1.25 V, ±1 V. http://techteach.no/tekdok/usb6009/. http://www.tau.ac.il/~electro/pdf_files/computer/ni_6008_ADC_manual.pdf. ONLY TRUE FOR DIFFERENTIAL RECORDINGS
+            volt_range = 1;
         case 'USB-6210'
             max_fs = 250e3;  % http://www.ni.com/pdf/manuals/371303n.pdf
             max_chans = 8;  % if bipolar/referential
@@ -73,7 +72,7 @@ for i_dev = 1:numel(nidevs)
             analog_chans = 0:num_chans-1;
             % digital_chans = '';  % Digital channels are software clocked rather than hardware, so can not be streamed along with analog data
             counter_chans = [0 1]; % 2 counter channels for rotary encoders. 32 Bit counters. http://www.ni.com/pdf/manuals/375195d.pdf
-            volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs. % USB-6210/1: ±10 V, ±5 V, ±1 V, ±0.2 V: http://www.ni.com/datasheet/pdf/en/ds-9
+            volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs
         case 'USB-6211'
             max_fs = 250e3;  % http://www.ni.com/pdf/manuals/371303n.pdf
             max_chans = 8;  % if bipolar/referential
@@ -84,7 +83,7 @@ for i_dev = 1:numel(nidevs)
             analog_chans = 0:num_chans-1;
             % digital_chans = '';  % Digital channels are software clocked rather than hardware, so can not be streamed along with analog data
             counter_chans = [0 1]; % 2 counter channels for rotary encoders. 32 Bit counters. http://www.ni.com/pdf/manuals/375195d.pdf
-            volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs. % USB-6210/1: ±10 V, ±5 V, ±1 V, ±0.2 V: http://www.ni.com/datasheet/pdf/en/ds-9
+            volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs
         otherwise
             fprintf('Device model %s not recognized.\n', dev_model);
             continue;
@@ -117,9 +116,7 @@ if num_pci_sync == 2
     addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
     addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
     % s_in.Connections % shows connections
-    fprintf('Synchronized two PCI/e device clocks.\n');
-elseif num_pci_sync > 2
-    fprintf('More than two PCI/e device clocks: Must be synchronized.\n');
+    fprintf('Synchronized PCI/e device clocks.\n');
 end
 
 %% Set channel parameters: Voltage Range & Input Type for analog channels
@@ -127,6 +124,11 @@ chans = get(s_in, 'Channels');
 chan_analog = strncmp('ai', {chans.ID}, 2);
 
 % Volt ranges:
+% PCI-6255  : ±10 V, ±5 V, ±2 V, ±1 V, ±0.5 V, ±0.2 V, ±0.1 V: http://www.ni.com/datasheet/pdf/en/ds-22
+% PCIe-6323 : ±10 V, ±5 V, ±1 V, ±0.2 V: http://www.ni.com/pdf/manuals/370785d.pdf
+% USB-6210/1: ±10 V, ±5 V, ±1 V, ±0.2 V: http://www.ni.com/datasheet/pdf/en/ds-9
+% USB-6009  : ±20 V, ±10 V, ±5 V, ±4 V, ±2.5 V, ±2 V, ±1.25 V, ±1 V. http://techteach.no/tekdok/usb6009/. http://www.tau.ac.il/~electro/pdf_files/computer/ni_6008_ADC_manual.pdf. ONLY TRUE FOR DIFFERENTIAL RECORDINGS
+% USB-6001  : ±10 V, ONLY SUPPORTED AS OF MATLAB 2014B: http://www.mathworks.com/matlabcentral/answers/146228-is-it-possible-to-use-an-unsupported-daq-board
 volt_range = [0-volt_range, volt_range];
 set(chans(chan_analog), 'Range', volt_range); % Set default volt range for all analog inputs, modify below. This way sets at least once for all channels, even hidden (i.e. jumpers)
 set(chans(chan_analog), 'InputType', 'Differential'); % Set all analog inputs as differential
@@ -137,7 +139,7 @@ set(chans(chan_analog), 'InputType', 'Differential'); % Set all analog inputs as
 
 %% Set channel parameters: Encoder resolution for counter/rotary encoder channels
 chan_counter = strncmp('ctr', {chans.ID}, 3);
-set(chans(chan_counter), 'EncoderType', 'X4'); % Default X1, res = X4 > X2 > X1 % https://www.mathworks.com/help/daq/ref/encodertype.html
+set(chans(chan_counter), 'EncoderType', 'X4'); % Default X1, res = X1 < X2 < X4. % https://www.mathworks.com/help/daq/ref/encodertype.html
 
 %% Finish
 fprintf('Done setting up acquisition devices.\n');
