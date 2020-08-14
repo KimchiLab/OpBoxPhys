@@ -20,6 +20,9 @@ function OpBoxPhys_LogData(src, event)
 % Consider changing to single rather than double since wasted precision?
 % But lost some time precision when converted prior timestamps from double to single
 % Timestamps are helpful with multiple subjects--aligning across single NI session
+%
+% 2020/08/05: Added software "synchronization" for camera and NI data
+% Save timestamp of data chunks acquired with corresponding # frames acquired
 
 global subjects
 
@@ -32,9 +35,15 @@ for i_subj = 1:numel(subjects)
         count = fwrite(subjects(i_subj).fid, data, 'double');
         subjects(i_subj).bytes_written = subjects(i_subj).bytes_written + count;
         
+        % If there is camera data, save the numbers of data timestamps and camera frames
+        if ~isempty(subjects(i_subj).cam_id) && ~isempty(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
+            % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
+            fwrite(subjects(i_subj).fid_camsynch, [event.TimeStamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
+        end
+            
+        % if a data file size exceeds bytes cutoff (e.g. ~1GB), flushdata and start recording new files
         if subjects(i_subj).bytes_written > subjects(i_subj).bytes_cutoff
             % fprintf('New file at %d\n', subjects(i_subj).bytes_written);
-            % if a data file size exceeds bytes cutoff (e.g. ~1GB), flushdata and start recording new files
             subjects(i_subj) = subjects(i_subj).FileClose();
             subjects(i_subj) = subjects(i_subj).FileName();
             subjects(i_subj) = subjects(i_subj).FilePrepPhys();

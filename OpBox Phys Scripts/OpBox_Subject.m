@@ -31,6 +31,7 @@ classdef OpBox_Subject
         dir_save
         bytes_written
         bytes_cutoff
+        fid_camsynch
         % Graph specific properties
         axis_time
         h_time_text
@@ -120,6 +121,9 @@ classdef OpBox_Subject
                 obj.nidev_counter = box_info(idx_b).nidev_counter;
                 obj.ch_counter = box_info(idx_b).ch_counter;
                 obj.cam_id = box_info(idx_b).cam;
+                if obj.nidev_digital ~= obj.nidev_analog || obj.nidev_counter ~= obj.nidev_analog || obj.nidev_digital ~= obj.nidev_counter
+                    fprintf('WARNING: NI device numbers differ for data streams: Analog=%d, Digital=%d, Counter=%d\n', obj.nidev_analog, obj.nidev_digital, obj.nidev_counter);
+                end
             else
                 fprintf('Subject %s: Could not find Box %d info, set to NaN\n', obj.name, obj.box);
                 obj.box = NaN;
@@ -203,17 +207,17 @@ classdef OpBox_Subject
         function obj = FileName(obj)
             obj.dir_save = sprintf('%s\\Data_%s\\', pwd, obj.room);
             if ~exist(obj.dir_save, 'dir')
-                obj.dir_save = [pwd '\'];
+                mkdir(obj.dir_save);
             end
-            cd(obj.dir_save);
+            % cd(obj.dir_save); % will cause errors if going to a different folder but OpBox functions are not in the path
             % Determine filename
-            obj.filename = [obj.name '-' datestr(date, 'yyyymmdd') '-' datestr(now, 'HHMMSS')];
+            obj.filename = [obj.dir_save obj.name '-' datestr(date, 'yyyymmdd') '-' datestr(now, 'HHMMSS')];
         end
         
         function obj = FilePrepPhys(obj)
             % Prep Binary Files for saving
             obj.fid = fopen([obj.filename '.bin'], 'w'); % Can get the following Error if not running Matlab as administrator: Invalid file identifier.  Use fopen to generate a valid file identifier. http://stackoverflow.com/questions/10606373/what-causes-an-invalid-file-identifier-in-matlab
-            % File Version Number: Version 3 as of 2018/06/28: Added counter data. Version 4 = save as single rather than double?
+            % File Version Number: Version 3 as of 2018/06/28: Added counter data. Version 4 = save numbers as single precision rather than double?
             fwrite(obj.fid, 3, 'int');
             % File format: Rate as int, then num chans as int
             fwrite(obj.fid, obj.Fs, 'int');
@@ -224,12 +228,25 @@ classdef OpBox_Subject
             % Iniitialize bytes to 0
             obj.bytes_written = 0;
             obj.bytes_cutoff = 5e9 / 8;  % Divided by 8 since returns bytes rather than bits
+            
+            % Software synchronization of NI data and camera frames: .OpboxCamSymch = .ocs
+            if ~isempty(obj.cam_id) && ~isempty(obj.cam)
+                obj.fid_camsynch = fopen([obj.filename '.ocs'], 'w'); % Can get the following Error if not running Matlab as administrator: Invalid file identifier.  Use fopen to generate a valid file identifier. http://stackoverflow.com/questions/10606373/what-causes-an-invalid-file-identifier-in-matlab
+                fwrite(obj.fid_camsynch, 1, 'int'); % File Version Number: Version 1 as of 2020/08/12
+                % File is just a paired list of numbers: NI timestamps acquired and Camera frames acquired, collected each time data from NI is collected
+            end
         end
 
         function obj = FileClose(obj)
-            fclose(obj.fid);
+            fclose(obj.fid); % Close main data file, does not reset fid to -1
             obj.fid = -1;
-            fprintf('Closed file %s in %s (%.3f Mb)\n', obj.filename, obj.dir_save, obj.bytes_written/1e6);
+            [file_path,file_name,file_ext] = fileparts(obj.filename);
+            fprintf('Closed files %s in\n%s (%.3f Mb)\n', file_name, file_path, obj.bytes_written/1e6);
+            % Close OpboxCameraSynch file if there is one
+            if ~isempty(obj.cam_id) && ~isempty(obj.cam) && (obj.fid_camsynch ~= -1)
+                fclose(obj.fid_camsynch);
+                obj.fid_camsynch = -1;
+            end
         end
         
     end

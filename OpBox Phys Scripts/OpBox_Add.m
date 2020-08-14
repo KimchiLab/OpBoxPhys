@@ -29,38 +29,46 @@ for i_subj = 1:numel(subj_names)
         fprintf('Subject %s not added, box not defined for Room %d.\n', new_subject.name, new_subject.room);
     else
         new_subject = new_subject.ChanMatch(s_in);
-%         ch_fields = {'analog', 'digital', 'counter'};
-%         for i_field = 1:numel(ch_fields)
-%         end
         if new_subject.num_analog ~= numel(new_subject.idx_analog)
-            fprintf('Subject %s not added, analog channels not found on current machine with current settings.\n\n', new_subject.name);
+            fprintf('Subject %s not added, analog channels not found using current settings.\n', new_subject.name);
+            fprintf('Check that the correct DAQ is assigned to this subject/box,\nand that the selected DAQ supports this channel type.\n\n');
         elseif new_subject.num_digital ~= numel(new_subject.idx_digital)
-            fprintf('Subject %s not added, digital channels not found on current machine with current settings,\ncheck that the selected DAQ supports this channel type.\n\n', new_subject.name);
+            fprintf('Subject %s not added, digital channels not found on current machine with current settings.\n', new_subject.name);
+            fprintf('Check that the correct DAQ is assigned to this subject/box,\nand that the selected DAQ supports this channel type.\n\n');
         elseif new_subject.num_counter ~= numel(new_subject.idx_counter)
-            fprintf('Subject %s not added, counter channels not found on current machine with current settings,\ncheck that the selected DAQ supports this channel type.\n\n', new_subject.name);
+            fprintf('Subject %s not added, counter channels not found on current machine with current settings.\n', new_subject.name);
+            fprintf('Check that the correct DAQ is assigned to this subject/box,\nand that the selected DAQ supports this channel type.\n\n');
         else
             % Subject valid: Setup Filename
             new_subject = new_subject.FileName;
+            
             % First set up camera if needed: Will take a little time before ready to save
             if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
                 % Image Acquisition Toolbox must be installed
-                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Initialize camera & resolution
-                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
-                set(new_subject.cam, 'FramesPerTrigger', inf);
-                set(new_subject.cam, 'FramesAcquiredFcnCount', 30);  % Try to display roughly 1/sec. Can't guarantee frame rate?
-                
-                % Setup Video Logger
-                set(new_subject.cam,'LoggingMode','disk');
-                vid_writer = VideoWriter([new_subject.dir_save new_subject.filename], 'MPEG-4');
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
+                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
+                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Initialize camera & resolution
+                set(new_subject.cam, 'FramesPerTrigger', inf); % Collect continuously once started
+                % set(new_subject.cam, 'FramesAcquiredFcnCount', 1);  % For version that notes timestamps for each frame, currently not used
+                
+                % Setup Video Logger: save frames to disk with compression
+                set(new_subject.cam, 'LoggingMode', 'disk');
+                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');
                 set(new_subject.cam, 'DiskLogger', vid_writer);
+                
+                % Start camera
                 start(new_subject.cam);
             end
             
-            % Physiology file starts writing as soon as there is an available fid
+            % Physiology file starts writing as soon as there is an available fid, set up after camera
             new_subject = new_subject.FilePrepPhys;
-            subjects = [subjects; new_subject];
+            % % Set camera log file after it is opened (if it was opened in FilePrepPhys depending on camera status), currently not used
+            % if ~isempty(new_subject.fid_camsynch) && new_subject.fid_camsynch>-1
+            %     new_subject.cam.FramesAcquiredFcn = {'OpBoxPhys_LogCameraSynch', new_subject.fid_camsynch, s_in};  % Try to display roughly 1/sec. Can't guarantee frame rate?
+            % end
             
+            subjects = [subjects; new_subject]; % Append new subject
+
         end
     end
 end

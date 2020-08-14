@@ -1,6 +1,6 @@
 % Set up National Instrument data acquisition devices
 % Using Mathworks Data Acquisition Toolbox
-function [s_in] = OpBoxPhys_Setup(Fs)
+function [s_in] = OpBoxPhys_SetupDevices(Fs)
 
 %% Default Parameters
 % Sampling rate if none specified
@@ -9,7 +9,7 @@ if nargin < 1
 end
 
 %% Initialize National Instruments Device & Add Analog&Digital Input/Output Channels
-fprintf('OpBox: Initializing devices...\n');
+fprintf('\nOpBox: Initializing devices...\n');
 if ~exist('daq')
     fprintf('daq from Data Acquisition Toolbox not found\n');
 end
@@ -25,7 +25,7 @@ s_in = daq.createSession('ni'); % Create a session for National Instruments devi
 % Set standard session parameters:
 s_in.Rate = Fs;
 s_in.IsContinuous = true;
-s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms
+s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 
 num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware connection later
 
@@ -33,6 +33,7 @@ num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware co
 for i_dev = 1:numel(nidevs)
     name_dev = get(nidevs(i_dev), 'ID');
     dev_model = get(nidevs(i_dev), 'Model'); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
+    fprintf('%3d: %s = %s', i_dev, dev_model, name_dev);
     % subsys = get(nidevs(i_dev), 'Subsystems');
     digital_chans = ''; % Specified as text
     counter_chans = []; % Specified as num/doubles, like analog chans
@@ -78,7 +79,7 @@ for i_dev = 1:numel(nidevs)
             % digital_chans = '';  % Digital channels are software clocked rather than hardware, so can not be streamed along with analog data
             counter_chans = [0 1]; % 2 counter channels for rotary encoders. 32 Bit counters. http://www.ni.com/pdf/manuals/375195d.pdf
             volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs
-        case 'USB-6211'
+        case 'USB-6211' % Similar to USB-6210 but has analog output channels as well
             max_fs = 250e3;  % http://www.ni.com/pdf/manuals/371303n.pdf
             max_chans = 8;  % if bipolar/referential
             num_chans = min(floor(max_fs / Fs), max_chans);
@@ -90,10 +91,10 @@ for i_dev = 1:numel(nidevs)
             counter_chans = [0 1]; % 2 counter channels for rotary encoders. 32 Bit counters. http://www.ni.com/pdf/manuals/375195d.pdf
             volt_range = 5; % Supports 1V but also using for 0-5V analog input in OpBox shield multiplexed trigger inputs
         otherwise
-            fprintf('Device model %s not recognized.\n', dev_model);
+            fprintf(' not recognized.\n');
             continue;
     end
-    fprintf('%s %s recognized.\n', name_dev, dev_model);
+    fprintf(' recognized.\n');
     % Add analog channels to session
     s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
     % Add digital channels to session
@@ -153,8 +154,11 @@ fprintf('Done setting up acquisition devices.\n');
 if ~exist('imaqhwinfo', 'file')
     fprintf('Image Acquisition Toolbox not found\n');
 else
-    adaptor_info = imaqhwinfo;
-    fprintf('%d camera adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
+%     adaptor_info = imaqhwinfo;
+%     fprintf('%d adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
     wincam_info = imaqhwinfo('winvideo');
     fprintf('%d Windows camera device(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(wincam_info.DeviceInfo));
+    for i_cam = 1:numel(wincam_info.DeviceInfo)
+        fprintf('%3d: %s\n', wincam_info.DeviceInfo(i_cam).DeviceID, wincam_info.DeviceInfo(i_cam).DeviceName); 
+    end
 end
