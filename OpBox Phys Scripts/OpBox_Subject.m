@@ -121,8 +121,14 @@ classdef OpBox_Subject
                 obj.nidev_counter = box_info(idx_b).nidev_counter;
                 obj.ch_counter = box_info(idx_b).ch_counter;
                 obj.cam_id = box_info(idx_b).cam;
-                if obj.nidev_digital ~= obj.nidev_analog || obj.nidev_counter ~= obj.nidev_analog || obj.nidev_digital ~= obj.nidev_counter
-                    fprintf('WARNING: NI device numbers differ for data streams: Analog=%d, Digital=%d, Counter=%d\n', obj.nidev_analog, obj.nidev_digital, obj.nidev_counter);
+                if numel(obj.nidev_counter)
+                    if obj.nidev_digital ~= obj.nidev_analog || obj.nidev_counter ~= obj.nidev_analog || obj.nidev_digital ~= obj.nidev_counter
+                        fprintf('WARNING: NI device numbers differ for data streams: Analog=%d, Digital=%d, Counter=%d\n', obj.nidev_analog, obj.nidev_digital, obj.nidev_counter);
+                    end
+                else
+                    if obj.nidev_digital ~= obj.nidev_analog
+                        fprintf('WARNING: NI device numbers differ for data streams: Analog=%d, Digital=%d\n', obj.nidev_analog, obj.nidev_digital);
+                    end
                 end
             else
                 fprintf('Subject %s: Could not find Box %d info, set to NaN\n', obj.name, obj.box);

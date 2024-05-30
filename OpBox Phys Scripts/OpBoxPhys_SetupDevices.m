@@ -42,6 +42,7 @@ for i_dev = 1:numel(nidevs)
             analog_chans = [0:7, 16:23];
             digital_chans = '0:31';
             num_pci_sync = num_pci_sync + 1;
+            counter_chans = [0 1 2 3]; % 4 counter channels: https://www.ni.com/docs/en-US/bundle/pcie-6323-specs/page/specs.html
             volt_range = 1;
         case 'PCI-6225'
             analog_chans = [0:7, 16:23, 32:39, 48:55, 64:71];

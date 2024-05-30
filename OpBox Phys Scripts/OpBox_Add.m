@@ -46,7 +46,9 @@ for i_subj = 1:numel(subj_names)
             if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
                 % Image Acquisition Toolbox must be installed
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
-                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
+                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_640x480');  % Initialize camera & resolution
+                % new_subject.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale, despite setting configuration
+                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Initialize camera & resolution
                 set(new_subject.cam, 'FramesPerTrigger', inf); % Collect continuously once started
                 % set(new_subject.cam, 'FramesAcquiredFcnCount', 1);  % For version that notes timestamps for each frame, currently not used
@@ -54,6 +56,7 @@ for i_subj = 1:numel(subj_names)
                 % Setup Video Logger: save frames to disk with compression
                 set(new_subject.cam, 'LoggingMode', 'disk');
                 vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');
+                % vid_writer = VideoWriter(new_subject.filename, 'Grayscale AVI'); % Does not work with saving grayscale, despite setting configuration
                 set(new_subject.cam, 'DiskLogger', vid_writer);
                 
                 % Start camera
