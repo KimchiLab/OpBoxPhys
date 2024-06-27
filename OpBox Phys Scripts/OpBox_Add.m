@@ -46,7 +46,8 @@ for i_subj = 1:numel(subj_names)
             if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
                 % Image Acquisition Toolbox must be installed
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
-                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_640x480');  % Initialize camera & resolution
+                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_640x480');  % Initialize camera & resolution
+                new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_1280x720');  % Initialize camera & resolution: wider for ELP/MouseOpBox
                 % new_subject.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale, despite setting configuration
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'YUY2_320x240');  % Initialize camera & resolution
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Initialize camera & resolution
