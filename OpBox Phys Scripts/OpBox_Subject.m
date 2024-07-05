@@ -25,12 +25,15 @@ classdef OpBox_Subject
         num_counter
         idx_counter
         Fs
+        num_ch
         % File specific properties
         filename
         fid
         dir_save
-        bytes_written
-        bytes_cutoff
+        num_ts_written
+        num_ts_cutoff
+        % bytes_written
+        % bytes_cutoff
         fid_camsynch
         % Graph specific properties
         axis_time
@@ -182,6 +185,9 @@ classdef OpBox_Subject
                 obj.idx_digital = idx_source(:)'; % for some reason intersect changes row vector inputs into a column vector. convert back for readability
                 obj.idx_chan = [obj.idx_chan, obj.idx_digital];
             end
+
+            % Total channels
+            obj.num_ch = obj.num_analog + obj.num_counter + obj.num_digital + 1; % +1 for timestamp column/"channel"
             
             % If trigger not already defined, set to first digital channel
             if isempty(obj.ch_trigger) && obj.num_digital > 0
@@ -232,8 +238,9 @@ classdef OpBox_Subject
             fwrite(obj.fid, obj.num_counter,'int');
             fwrite(obj.fid, obj.num_digital,'int');
             % Iniitialize bytes to 0
-            obj.bytes_written = 0;
-            obj.bytes_cutoff = 5e9 / 8;  % Divided by 8 since returns bytes rather than bits
+            obj.num_ts_written = 0;
+            % obj.num_ts_cutoff = obj.Fs * seconds(hours(1));
+            obj.num_ts_cutoff = obj.Fs * seconds(seconds(10));
             
             % Software synchronization of NI data and camera frames: .OpboxCamSymch = .ocs
             if ~isempty(obj.cam_id) && ~isempty(obj.cam)
@@ -247,7 +254,7 @@ classdef OpBox_Subject
             fclose(obj.fid); % Close main data file, does not reset fid to -1
             obj.fid = -1;
             [file_path,file_name,file_ext] = fileparts(obj.filename);
-            fprintf('Closed files %s in\n%s (%.3f Mb)\n', file_name, file_path, obj.bytes_written/1e6);
+            fprintf('Closed OpBox files %s (%.1f sec phys data)\n', file_name, obj.num_ts_written/obj.Fs);
             % Close OpboxCameraSynch file if there is one
             if ~isempty(obj.cam_id) && ~isempty(obj.cam) && (obj.fid_camsynch ~= -1)
                 fclose(obj.fid_camsynch);

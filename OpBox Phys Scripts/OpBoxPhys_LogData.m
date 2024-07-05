@@ -33,7 +33,7 @@ for i_subj = 1:numel(subjects)
     if subjects(i_subj).fid ~= -1
         % then write to the specified file stream
         count = fwrite(subjects(i_subj).fid, data, 'double');
-        subjects(i_subj).bytes_written = subjects(i_subj).bytes_written + count;
+        subjects(i_subj).num_ts_written = subjects(i_subj).num_ts_written + count/subjects(i_subj).num_ch; % Really count of numbers written, not bytes, across all channels
         
         % If there is camera data, save the numbers of data timestamps and camera frames
         if ~isempty(subjects(i_subj).cam_id) && ~isempty(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
@@ -41,32 +41,31 @@ for i_subj = 1:numel(subjects)
             fwrite(subjects(i_subj).fid_camsynch, [event.TimeStamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
         end
             
-        % if a data file size exceeds bytes cutoff (e.g. ~1GB), flushdata and start recording new files
-        if subjects(i_subj).bytes_written > subjects(i_subj).bytes_cutoff
-            % fprintf('New file at %d\n', subjects(i_subj).bytes_written);
+        % if a data file size exceeds ts cutoff (e.g. ~1GB), flushdata and start recording new files
+        if subjects(i_subj).num_ts_written >= subjects(i_subj).num_ts_cutoff
+
+            % Close files including phys and cam
             subjects(i_subj) = subjects(i_subj).FileClose();
-            subjects(i_subj) = subjects(i_subj).FileName();
-            subjects(i_subj) = subjects(i_subj).FilePrepPhys();
-            
-            % Camera related file restart
             if ~isempty(subjects(i_subj).cam_id) && ~isempty(subjects(i_subj).cam)
                 stop(subjects(i_subj).cam);
-                close(get(subjects(i_subj).cam, 'DiskLogger')); % File gets shrunk/deleted if closed before video stopped
                 flushdata(subjects(i_subj).cam);
-                delete(subjects(i_subj).cam);
-                
-                % Restart camera
-                subjects(i_subj).cam = videoinput('winvideo', subjects(i_subj).cam_id, 'YUY2_320x240');  % Initialize camera & resolution
-                set(subjects(i_subj).cam, 'FramesPerTrigger', inf);
-                set(subjects(i_subj).cam, 'FramesAcquiredFcnCount', 30);  % Try to display roughly 1/sec. Can't guarantee frame rate?
+                close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+            end
 
-                % Setup Logger
-                set(subjects(i_subj).cam,'LoggingMode','disk');
-                vid_writer = VideoWriter([subjects(i_subj).dir_save subjects(i_subj).filename], 'MPEG-4');
-                % May have to match cam ID if not in order? But have to assume so?
-                set(subjects(i_subj).cam, 'DiskLogger', vid_writer);
+            % Re-prep files
+            subjects(i_subj) = subjects(i_subj).FileName();
+            
+            % Camera related file restart
+            if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam)
+                vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
+                set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
+                % (re)Start camera
                 start(subjects(i_subj).cam);
             end
+
+            % Physiology file starts writing as soon as there is an available fid, set up after camera
+            subjects(i_subj) = subjects(i_subj).FilePrepPhys();
+
         end
     end
 end
