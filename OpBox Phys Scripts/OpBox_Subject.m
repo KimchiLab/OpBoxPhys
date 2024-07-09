@@ -33,6 +33,7 @@ classdef OpBox_Subject
         num_ts_written
         num_ts_cutoff
         flag_file_ready
+        flag_plot
         % bytes_written
         % bytes_cutoff
         fid_camsynch

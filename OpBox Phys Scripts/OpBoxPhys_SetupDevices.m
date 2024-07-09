@@ -34,14 +34,17 @@ s_in = daq('ni'); % Create a session for National Instruments devices
 % Set standard session parameters:
 s_in.Rate = Fs;
 % s_in.IsContinuous = true;
-s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
+% s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
+s_in.ScansAvailableFcnCount = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 
 num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware connection later
 
 % initialize all channels from all devices
-for i_dev = 1:numel(nidevs)
-    name_dev = get(nidevs(i_dev), 'ID');
-    dev_model = get(nidevs(i_dev), 'Model'); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
+for i_dev = 1:size(nidevs, 1)
+    % name_dev = get(nidevs(i_dev), 'ID');
+    % dev_model = get(nidevs(i_dev), 'Model'); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
+    name_dev = nidevs.DeviceID(i_dev);
+    dev_model = nidevs.Model(i_dev); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
     fprintf('%3d: %s = %s', i_dev, dev_model, name_dev);
     % subsys = get(nidevs(i_dev), 'Subsystems');
     digital_chans = ''; % Specified as text

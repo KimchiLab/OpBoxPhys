@@ -10,7 +10,8 @@ global subjects; % defined globally so that listener handles can access updated 
 if isempty(s_in)
     fprintf('No NI devices initialized to start listener handles.\n');
     lh = [];
-elseif s_in.IsRunning
+% elseif s_in.IsRunning
+elseif s_in.Running
     fprintf('Recording ongoing... Please stop first.\n');
     lh = [];
 else
@@ -23,8 +24,11 @@ else
     end
     
     % Set up listener handles: Access subjects as global var
-    lh.log = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_LogData(src, event));
-    lh.draw = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_DrawData(src, event));
+    % lh.log = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_LogData(src, event));
+    % lh.draw = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_DrawData(src, event));
+    % s_in.ScansAvailableFcn = @(src, event) OpBoxPhys_LogData(src, event);
+    % lh.draw = s_in.ScansAvailableFcn;
+    lh = [];
     
     % If try to set up listener handle with subjects as variable to pass in,
     % Then only passes in subjects as they are at the time this is initialized
@@ -34,6 +38,7 @@ else
     % Start recording
     % s_in.startBackground();
     start(s_in, "Continuous");
-    fprintf('Started streaming for %d sec\n', s_in.DurationInSeconds);
+    % fprintf('Started streaming for %d sec\n', s_in.DurationInSeconds);
+    fprintf('Started streaming\n');
     
 end
