@@ -10,8 +10,7 @@ else
     subj_names = OpBox_SubjectsNames(subjects);
 end
 
-if ~isempty(subj_names)
-    lh.draw.Enabled = false;
+if exist('subj_names', 'var') && numel(subj_names)
     for i_subj = 1:numel(subj_names)
         subj_mask = strcmpi(subj_names{i_subj}, {subjects.name});
         subjects(subj_mask) = subjects(subj_mask).FileClose();
@@ -24,7 +23,6 @@ if ~isempty(subj_names)
     end
     if numel(subjects) > 0
         subjects = OpBox_Graphs(subjects);
-        lh.draw.Enabled = true;
     end
 end
 

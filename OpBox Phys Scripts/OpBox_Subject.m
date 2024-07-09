@@ -32,8 +32,6 @@ classdef OpBox_Subject
         dir_save
         num_ts_written
         num_ts_cutoff
-        flag_file_ready
-        flag_plot
         % bytes_written
         % bytes_cutoff
         fid_camsynch
@@ -72,7 +70,6 @@ classdef OpBox_Subject
             obj.room = room;
             obj.name = subj_name;
             obj.ts_start = -1;
-            obj.flag_file_ready = false;
         end
         
         function obj = BoxInfo(obj, box_info, subj_info)
@@ -234,8 +231,8 @@ classdef OpBox_Subject
 
             % Iniitialize bytes to 0
             obj.num_ts_written = 0;
-            % obj.num_ts_cutoff = obj.Fs * seconds(hours(1));
-            obj.num_ts_cutoff = obj.Fs * seconds(seconds(10));
+            obj.num_ts_cutoff = obj.Fs * seconds(hours(1));
+            % obj.num_ts_cutoff = obj.Fs * seconds(seconds(10)); % Rapid change for debugging
 
             % File Version Number: Version 3 as of 2018/06/28: Added counter data. Version 4 = save numbers as single precision rather than double?
             fwrite(obj.fid, 3, 'int');
@@ -252,14 +249,13 @@ classdef OpBox_Subject
                 fwrite(obj.fid_camsynch, 1, 'int'); % File Version Number: Version 1 as of 2020/08/12
                 % File is just a paired list of numbers: NI timestamps acquired and Camera frames acquired, collected each time data from NI is collected
             end
-
-            obj.flag_file_ready = true;
         end
 
         function obj = FileClose(obj)
-            obj.flag_file_ready = false;
-            fclose(obj.fid); % Close main data file, does not reset fid to -1
-            obj.fid = -1;
+            if obj.fid ~= -1
+                fclose(obj.fid); % Close main data file, does not reset fid to -1
+                obj.fid = -1;
+            end
             % [file_path,file_name,file_ext] = fileparts(obj.filename);
             [~, file_name] = fileparts(obj.filename);
             fprintf('Closed OpBox files %s (%.1f sec phys data)\n', file_name, obj.num_ts_written/obj.Fs);

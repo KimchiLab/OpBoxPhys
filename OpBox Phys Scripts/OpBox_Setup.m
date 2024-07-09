@@ -31,9 +31,9 @@ cd(fileparts(mfilename('fullpath'))); % Start at the directory of this mfile
 addpath(pwd); % Add this directory to path, important for listener handle functions to stay accessible
 
 % Setup devices
-Fs = 1e3; % Sampling rate must be shared amongst all subjects
+Fs = 1e3; % Sampling rate must be shared amongst all subjects/devices
 s_in = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
-lh = OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
+OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
 
 %%% Additional Scripts
 OpBox_Add; % Add Subjects after initial start
