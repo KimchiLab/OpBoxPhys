@@ -27,10 +27,10 @@ function OpBoxPhys_LogData(src, event)
 global subjects
 
 for i_subj = 1:numel(subjects)
-    % have to pull out data for just this subject for this file
+    % pull out data assigned to just this subject
     data = [event.TimeStamps, event.Data(:, subjects(i_subj).idx_chan)]';
     % check whether fid for this subject is valid yet?
-    if subjects(i_subj).fid ~= -1
+    if subjects(i_subj).flag_file_ready
         % then write to the specified file stream
         count = fwrite(subjects(i_subj).fid, data, 'double');
         subjects(i_subj).num_ts_written = subjects(i_subj).num_ts_written + count/subjects(i_subj).num_ch; % Really count of numbers written, not bytes, across all channels
@@ -43,30 +43,37 @@ for i_subj = 1:numel(subjects)
             
         % if a data file size exceeds ts cutoff (e.g. ~1GB), flushdata and start recording new files
         if subjects(i_subj).num_ts_written >= subjects(i_subj).num_ts_cutoff
+            lh.draw.Enabled = false; % Turn off graphing listener handle during update
 
-            % Close files including phys and cam
-            subjects(i_subj) = subjects(i_subj).FileClose();
-            if ~isempty(subjects(i_subj).cam_id) && ~isempty(subjects(i_subj).cam)
-                stop(subjects(i_subj).cam);
-                flushdata(subjects(i_subj).cam);
-                close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
-            end
-
-            % Re-prep files
+            % Generate new/next filename
             subjects(i_subj) = subjects(i_subj).FileName();
-            
-            % Camera related file restart
-            if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam)
-                vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
-                set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
-                % (re)Start camera
-                start(subjects(i_subj).cam);
-            end
+            % fprintf('%d %s\n', subjects(i_subj).num_ts_written, subjects(i_subj).filename);
+
+            % Close files phys files
+            subjects(i_subj) = subjects(i_subj).FileClose();
+
+            % % Close & Reopen cam files
+            % if numel(subjects(i_subj).cam_id)
+                % stop(subjects(i_subj).cam);
+            %     flushdata(subjects(i_subj).cam);
+            %     close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+            %     % Camera related file restart
+            %     vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
+            %     set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
+                % start(subjects(i_subj).cam);
+            % end
+
+            % if min(src.NumScansAvailablePerChannel) <= 0
+            %     fprintf('MinNumScans = %d\n', min(src.NumScansAvailablePerChannel));
+            %     find(src.NumScansAvailablePerChannel <= 0)
+            % end
 
             % Physiology file starts writing as soon as there is an available fid, set up after camera
             subjects(i_subj) = subjects(i_subj).FilePrepPhys();
 
+            lh.draw.Enabled = true; % Turn on graphing listener handle after update
         end
+        
     end
 end
 

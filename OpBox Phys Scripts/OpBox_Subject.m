@@ -32,6 +32,7 @@ classdef OpBox_Subject
         dir_save
         num_ts_written
         num_ts_cutoff
+        flag_file_ready
         % bytes_written
         % bytes_cutoff
         fid_camsynch
@@ -70,6 +71,7 @@ classdef OpBox_Subject
             obj.room = room;
             obj.name = subj_name;
             obj.ts_start = -1;
+            obj.flag_file_ready = false;
         end
         
         function obj = BoxInfo(obj, box_info, subj_info)
@@ -102,7 +104,7 @@ classdef OpBox_Subject
                     obj.box = box_info.name;
                 else
                     obj.box = box_info(1).name;  % Default box
-                    fprintf('Type desired box #. Possible = ', obj.box);
+                    fprintf('Type desired box #. Possible = %d', obj.box);
                     fprintf('%d ', [box_info.name]);
                     str = input(sprintf('. (Default = %d): ', obj.box), 's');
                     if ~isempty(str)
@@ -111,7 +113,8 @@ classdef OpBox_Subject
                 end
             end
             % Find box info for this box number for this subject
-            [val, idx_a, idx_b] = intersect(obj.box, [box_info.name]); % identify the box index
+            % [val, idx_a, idx_b] = intersect(obj.box, [box_info.name]); % identify the box index
+            [~, ~, idx_b] = intersect(obj.box, [box_info.name]); % identify the box index
             if ~isempty(idx_b)
                 obj.nidev_analog = box_info(idx_b).nidev_analog;
                 obj.ch_analog = box_info(idx_b).ch_analog;
@@ -217,18 +220,22 @@ classdef OpBox_Subject
         end
         
         function obj = FileName(obj)
-            obj.dir_save = sprintf('%s\\Data_%s\\', pwd, obj.room);
+            obj.dir_save = fullfile(pwd, sprintf('Data_%s', obj.room));
             if ~exist(obj.dir_save, 'dir')
                 mkdir(obj.dir_save);
             end
-            % cd(obj.dir_save); % will cause errors if going to a different folder but OpBox functions are not in the path
-            % Determine filename
-            obj.filename = [obj.dir_save obj.name '-' datestr(date, 'yyyymmdd') '-' datestr(now, 'HHMMSS')];
+            obj.filename = fullfile(obj.dir_save, sprintf('%s-%s', obj.name, char(datetime("now", 'Format', 'yyyyMMdd-HHmmss'))));
         end
         
         function obj = FilePrepPhys(obj)
             % Prep Binary Files for saving
             obj.fid = fopen([obj.filename '.bin'], 'w'); % Can get the following Error if not running Matlab as administrator: Invalid file identifier.  Use fopen to generate a valid file identifier. http://stackoverflow.com/questions/10606373/what-causes-an-invalid-file-identifier-in-matlab
+
+            % Iniitialize bytes to 0
+            obj.num_ts_written = 0;
+            % obj.num_ts_cutoff = obj.Fs * seconds(hours(1));
+            obj.num_ts_cutoff = obj.Fs * seconds(seconds(10));
+
             % File Version Number: Version 3 as of 2018/06/28: Added counter data. Version 4 = save numbers as single precision rather than double?
             fwrite(obj.fid, 3, 'int');
             % File format: Rate as int, then num chans as int
@@ -237,23 +244,23 @@ classdef OpBox_Subject
             fwrite(obj.fid, obj.num_analog,'int');
             fwrite(obj.fid, obj.num_counter,'int');
             fwrite(obj.fid, obj.num_digital,'int');
-            % Iniitialize bytes to 0
-            obj.num_ts_written = 0;
-            % obj.num_ts_cutoff = obj.Fs * seconds(hours(1));
-            obj.num_ts_cutoff = obj.Fs * seconds(seconds(10));
             
             % Software synchronization of NI data and camera frames: .OpboxCamSymch = .ocs
-            if ~isempty(obj.cam_id) && ~isempty(obj.cam)
+            if numel(obj.cam_id) && numel(obj.cam)
                 obj.fid_camsynch = fopen([obj.filename '.ocs'], 'w'); % Can get the following Error if not running Matlab as administrator: Invalid file identifier.  Use fopen to generate a valid file identifier. http://stackoverflow.com/questions/10606373/what-causes-an-invalid-file-identifier-in-matlab
                 fwrite(obj.fid_camsynch, 1, 'int'); % File Version Number: Version 1 as of 2020/08/12
                 % File is just a paired list of numbers: NI timestamps acquired and Camera frames acquired, collected each time data from NI is collected
             end
+
+            obj.flag_file_ready = true;
         end
 
         function obj = FileClose(obj)
+            obj.flag_file_ready = false;
             fclose(obj.fid); % Close main data file, does not reset fid to -1
             obj.fid = -1;
-            [file_path,file_name,file_ext] = fileparts(obj.filename);
+            % [file_path,file_name,file_ext] = fileparts(obj.filename);
+            [~, file_name] = fileparts(obj.filename);
             fprintf('Closed OpBox files %s (%.1f sec phys data)\n', file_name, obj.num_ts_written/obj.Fs);
             % Close OpboxCameraSynch file if there is one
             if ~isempty(obj.cam_id) && ~isempty(obj.cam) && (obj.fid_camsynch ~= -1)

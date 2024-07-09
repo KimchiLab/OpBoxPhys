@@ -33,6 +33,6 @@ else
 
     % Start recording
     s_in.startBackground();
-    fprintf('Started new recording for %d sec\n', s_in.DurationInSeconds);
+    fprintf('Started streaming for %d sec\n', s_in.DurationInSeconds);
     
 end
