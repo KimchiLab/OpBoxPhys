@@ -3,16 +3,15 @@
 % After data acquisition device setup: OpBoxPhys_Setup
 % Usually before subjects have been added: OpBox_Add
 
-function lh = OpBoxPhys_Start(s_in)
+function OpBoxPhys_Start(s_in)
 
 global subjects; % defined globally so that listener handles can access updated info on the fly
 
 if isempty(s_in)
     fprintf('No NI devices initialized to start listener handles.\n');
-    lh = [];
-elseif s_in.IsRunning
+% elseif s_in.IsRunning
+elseif s_in.Running
     fprintf('Recording ongoing... Please stop first.\n');
-    lh = [];
 else
     % If subjects are available, then see if files are already open
     % If files are not open (fid == -1) for available subjects, then prep new files for them
@@ -23,8 +22,7 @@ else
     end
     
     % Set up listener handles: Access subjects as global var
-    lh.log = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_LogData(src, event));
-    lh.draw = addlistener(s_in, 'DataAvailable', @(src, event)OpBoxPhys_DrawData(src, event));
+    s_in.ScansAvailableFcn = @(src, event) OpBoxPhys_LogData(src, event);
     
     % If try to set up listener handle with subjects as variable to pass in,
     % Then only passes in subjects as they are at the time this is initialized
@@ -32,7 +30,6 @@ else
     % Can subclass the event Data class?? https://www.mathworks.com/help/matlab/matlab_oop/learning-to-use-events-and-listeners.html
 
     % Start recording
-    s_in.startBackground();
-    fprintf('Started streaming for %d sec\n', s_in.DurationInSeconds);
-    
+    start(s_in, "Continuous");
+    fprintf('Started streaming\n');
 end

@@ -66,11 +66,7 @@ for i_subj = 1:numel(subj_names)
             
             % Physiology file starts writing as soon as there is an available fid, set up after camera
             new_subject = new_subject.FilePrepPhys;
-            % % Set camera log file after it is opened (if it was opened in FilePrepPhys depending on camera status), currently not used
-            % if ~isempty(new_subject.fid_camsynch) && new_subject.fid_camsynch>-1
-            %     new_subject.cam.FramesAcquiredFcn = {'OpBoxPhys_LogCameraSynch', new_subject.fid_camsynch, s_in};  % Try to display roughly 1/sec. Can't guarantee frame rate?
-            % end
-            
+
             subjects = [subjects; new_subject]; % Append new subject
 
         end
