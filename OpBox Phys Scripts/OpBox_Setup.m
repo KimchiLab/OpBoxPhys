@@ -35,12 +35,10 @@ Fs = 1e3; % Sampling rate must be shared amongst all subjects/devices
 s_in = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
 OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
 
-%%% Additional Scripts
+% Additional Scripts
 OpBox_Add; % Add Subjects after initial start
 
 
 %% Finish recording
 % OpBox_Remove;  % Remove Subject(s)
 % OpBox_Stop;  % Stop Acquisition
-
-%%% Work on loading script/function
