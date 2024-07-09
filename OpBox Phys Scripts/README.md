@@ -3,7 +3,7 @@
 Physiology acquisition (EEG & EMG) using the **OpBox System**  
 (Open Source/Operant Boxes for Behavioral Neurophysiology)
  
-The OpBox Phys software library was written in MATLAB to use National Instruments Data Acquisition Devices to collect physiology and behavioral data from multiple subjects simultaneously. It requires MATLAB's Data Acquisition Toolbox and NI's DAQmx drivers.
+The OpBox Phys software library was written in MATLAB to use National Instruments Data Acquisition Devices to collect physiology and behavioral data from multiple subjects simultaneously. It requires MATLAB's Data Acquisition Toolbox (R2020a or newer) and NI's DAQmx drivers.
 
 ## Scripts/Functions
 OpBox MATLAB scripts are grouped into several types:  
