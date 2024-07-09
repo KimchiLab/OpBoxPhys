@@ -32,7 +32,8 @@ else
     % Can subclass the event Data class?? https://www.mathworks.com/help/matlab/matlab_oop/learning-to-use-events-and-listeners.html
 
     % Start recording
-    s_in.startBackground();
+    % s_in.startBackground();
+    start(s_in, "Continuous");
     fprintf('Started streaming for %d sec\n', s_in.DurationInSeconds);
     
 end

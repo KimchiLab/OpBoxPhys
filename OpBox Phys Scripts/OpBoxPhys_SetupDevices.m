@@ -2,6 +2,13 @@
 % Using Mathworks Data Acquisition Toolbox
 function [s_in] = OpBoxPhys_SetupDevices(Fs)
 
+%% Check matlab version for updated DAQ functions
+% https://www.mathworks.com/help/daq/transition-your-code-from-session-to-dataacquisition-interface.html
+v = ver;
+if datetime(v(1).Date) < datetime(2020, 1, 1)
+    fprintf('This version of OpBox only supports MATLAB R2020a and later')
+end
+
 %% Default Parameters
 % Sampling rate if none specified
 if nargin < 1
@@ -10,21 +17,23 @@ end
 
 %% Initialize National Instruments Device & Add Analog&Digital Input/Output Channels
 fprintf('\nOpBox: Initializing devices...\n');
-if ~exist('daq')
+if ~exist('daq', 'file')
     fprintf('daq from Data Acquisition Toolbox not found\n');
 end
-nidevs = daq.getDevices; % Gets device info
+% nidevs = daq.getDevices; % Gets device info
+nidevs = daqlist; % Gets device info
 if 0 == numel(nidevs)
     fprintf('No NI devices found to setup OpBox.\nPlease make sure NI-DAQmx drivers are installed and NI DAQ devices are connected.\n');
     s_in = [];
     return;
 end
 
-s_in = daq.createSession('ni'); % Create a session for National Instruments devices
+% s_in = daq.createSession('ni'); % Create a session for National Instruments devices
+s_in = daq('ni'); % Create a session for National Instruments devices
 
 % Set standard session parameters:
 s_in.Rate = Fs;
-s_in.IsContinuous = true;
+% s_in.IsContinuous = true;
 s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 
 num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware connection later
@@ -97,14 +106,17 @@ for i_dev = 1:numel(nidevs)
     end
     fprintf(' recognized.\n');
     % Add analog channels to session
-    s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
+    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
+    addinput(s_in, name_dev, analog_chans, "Voltage");
     % Add digital channels to session
     if ~isempty(digital_chans)
-        s_in.addDigitalChannel(name_dev, sprintf('Port0/Line%s', digital_chans), 'InputOnly'); % Much faster than 1 at a time
+        % s_in.addDigitalChannel(name_dev, sprintf('Port0/Line%s', digital_chans), 'InputOnly'); % Much faster than 1 at a time
+        addinput(s_in, name_dev, sprintf('Port0/Line%s', digital_chans), "Digital");
     end
     % Add counter channels to session
     if ~isempty(counter_chans)
-        s_in.addCounterInputChannel(name_dev, counter_chans, 'Position'); % https://www.mathworks.com/help/daq/ref/addcounterinputchannel.html
+        % s_in.addCounterInputChannel(name_dev, counter_chans, 'Position'); % https://www.mathworks.com/help/daq/ref/addcounterinputchannel.html
+        addinput(s_in, name_dev, counter_chans, "Position");
     end
 end
 
@@ -120,8 +132,10 @@ end
 % However, still seems to work as long as have an analog channel in use too
 % Note: USB clocks can not be synchronized in this way
 if num_pci_sync == 2
-    addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
-    addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
+    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
+    addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
+    % addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
+    addclock(s_in, "ScanClock", "Dev1/RTSI1", "Dev2/RTSI1");
     % s_in.Connections % shows connections
     fprintf('Synchronized PCI/e device clocks.\n');
 end
