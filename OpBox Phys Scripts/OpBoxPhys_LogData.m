@@ -44,6 +44,7 @@ for i_subj = 1:numel(subjects)
         % if a data file size exceeds ts cutoff (e.g. ~1GB), flushdata and start recording new files
         if subjects(i_subj).num_ts_written >= subjects(i_subj).num_ts_cutoff
             lh.draw.Enabled = false; % Turn off graphing listener handle during update
+            lh.log.Enabled = false;
 
             % Generate new/next filename
             subjects(i_subj) = subjects(i_subj).FileName();
@@ -52,26 +53,31 @@ for i_subj = 1:numel(subjects)
             % Close files phys files
             subjects(i_subj) = subjects(i_subj).FileClose();
 
-            % % Close & Reopen cam files
-            % if numel(subjects(i_subj).cam_id)
-                % stop(subjects(i_subj).cam);
-            %     flushdata(subjects(i_subj).cam);
-            %     close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
-            %     % Camera related file restart
-            %     vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
-            %     set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
-                % start(subjects(i_subj).cam);
-            % end
+            % Close & Reopen cam files
+            if numel(subjects(i_subj).cam_id)
+            %    stop(subjects(i_subj).cam);
+            %    flushdata(subjects(i_subj).cam);
+                % subjects(i_subj).cam.DiskLogger
+                % close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+                % Camera related file restart
+            %    vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
+            %    set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
+            %    start(subjects(i_subj).cam);
+            end
 
-            % if min(src.NumScansAvailablePerChannel) <= 0
-            %     fprintf('MinNumScans = %d\n', min(src.NumScansAvailablePerChannel));
-            %     find(src.NumScansAvailablePerChannel <= 0)
-            % end
+            if min(src.NumScansAvailablePerChannel) <= 0
+                % fprintf('MinNumScans = %d\n', min(src.NumScansAvailablePerChannel));
+                fprintf('%d ', src.NumScansAvailablePerChannel);
+                fprintf('\n');
+                fprintf('%d ', find(src.NumScansAvailablePerChannel <= 0));
+                fprintf('\n');
+            end
 
             % Physiology file starts writing as soon as there is an available fid, set up after camera
             subjects(i_subj) = subjects(i_subj).FilePrepPhys();
 
             lh.draw.Enabled = true; % Turn on graphing listener handle after update
+            lh.log.Enabled = true;
         end
         
     end
