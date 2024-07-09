@@ -16,7 +16,7 @@ end
 
 subj_names = OpBox_SubjectsNames(subj_info);
 
-% lh.draw.Enabled = false; % Turn off graphing listener handle during update
+lh.draw.Enabled = false; % Turn off graphing listener handle during update
 
 % Process each new subject
 for i_subj = 1:numel(subj_names)
