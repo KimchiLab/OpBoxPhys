@@ -1,4 +1,4 @@
-% function [data] = OpBox_LoadPhysData(filename_bin, ch_crop_analog)
+% function data = OpBox_LoadPhysData(filename_bin, ch_crop_analog)
 % Eyal Kimchi
 % 2016/05/12
 %

@@ -22,6 +22,7 @@ OpBox MATLAB scripts are grouped into several types:
 * *OpBox\_Axis\_Time*: Change the axis for the display of temporal data
 * *OpBox_ResetEP*: Reset the evoked potentials being displayed
 * *OpBox_LoadPhysData*: Load data collected in a prior session
+	* data = OpBox_LoadPhysData(fullfile(server_dir_name, filename_bin)); % where filename_bin = the name of a binary .bin opbox file
 
 ## Configuration
 The .csv spreadsheets can be edited using a text editor or standard spreadsheet program. If using a program such as Excel, make sure to save in the same text based .csv format when done
