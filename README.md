@@ -1,4 +1,4 @@
-# OpBox Phys
+# OpBox System for Physiology & Camera Recordings
 
 Physiology acquisition (EEG & EMG) using the **OpBox System**  
 (Open Source/Operant Boxes for Behavioral Neurophysiology)
