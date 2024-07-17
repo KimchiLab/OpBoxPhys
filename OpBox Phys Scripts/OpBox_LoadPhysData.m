@@ -96,6 +96,9 @@ else
     %     end
     
     %     fprintf('Loaded phys data from %s (%.1f sec)\n', data.filename, toc);
+
+    % Set start time
+    data.dts_start = datetime(data.filename(end-18:end-4), 'InputFormat', 'yyyyMMdd-hhmmss');
 end
 
 %% Check if there is a OpBox Cam Synch file
@@ -123,6 +126,8 @@ if exist(filename_ocs, 'file')
     
     % Interpolate missing frame timestamps
     mask_nan = isnan(data.ts_frame);
-    idx    = 1:numel(data.ts_frame);
-    data.ts_frame(mask_nan) = interp1(idx(~mask_nan), data.ts_frame(~mask_nan), idx(mask_nan));
+    idx = 1:numel(data.ts_frame);
+    if sum(~mask_nan)
+        data.ts_frame(mask_nan) = interp1(idx(~mask_nan), data.ts_frame(~mask_nan), idx(mask_nan));
+    end
 end
