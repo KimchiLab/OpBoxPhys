@@ -102,7 +102,7 @@ classdef OpBox_Subject
                     obj.box = box_info.name;
                 else
                     obj.box = box_info(1).name;  % Default box
-                    fprintf('Type desired box #. Possible = %d', obj.box);
+                    fprintf('Type desired box #. Possible = ');
                     fprintf('%d ', [box_info.name]);
                     str = input(sprintf('. (Default = %d): ', obj.box), 's');
                     if ~isempty(str)
