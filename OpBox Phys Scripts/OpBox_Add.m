@@ -44,15 +44,19 @@ for i_subj = 1:numel(subj_names)
             
             % First set up camera if needed: Will take a little time before ready to save
             if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
-                % Image Acquisition Toolbox must be installed
+                % Image Acquisition Toolbox must be installed & windvideo add-on
                 % Check available resolutions:
                 % info = imaqhwinfo('winvideo');
-                % i.DeviceInfo.SupportedFormats'
+                % info.DeviceInfo.SupportedFormats'
+                % 320/240=1.333
+                % 640/480=1.333
+                % 800/600=1.333
+                % 1024/768=1.333
+                % 1280/720=1.777
+                % 1280/1024=1.23
+                % 1920/1080=1.777
 
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
-                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_640x480');  % Initialize camera & resolution
-                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_1280x720');  % Make sure this matches OpBoxPhys_LogData. Initialize camera & resolution: wider for ELP/MouseOpBox
-                % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_1280x720');  % Make sure this matches OpBoxPhys_LogData. Initialize camera & resolution: wider for ELP/MouseOpBox
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_320x240');  % Make sure this matches OpBoxPhys_LogData. Initialize camera & resolution: wider for ELP/MouseOpBox
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_640x480');  % Make sure this matches OpBoxPhys_LogData. Initialize camera & resolution: wider for ELP/MouseOpBox: just a little more zoomed in than 1024x768
                 % new_subject.cam = videoinput('winvideo', new_subject.cam_id, 'MJPG_800x600');  % Make sure this matches OpBoxPhys_LogData. Initialize camera & resolution: wider for ELP/MouseOpBox: Too zoomed in
@@ -70,9 +74,17 @@ for i_subj = 1:numel(subj_names)
                 % Setup Video Logger: save frames to disk with compression
                 set(new_subject.cam, 'LoggingMode', 'disk');
                 vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');
-                % vid_writer = VideoWriter(new_subject.filename, 'Grayscale AVI'); % Does not work with saving grayscale, despite setting configuration
+                % vid_writer = VideoWriter(new_subject.filename, 'Grayscale AVI'); 
+                % Does not work with saving grayscale, despite
+                % setting configuration: The specified VideoWriter object
+                % is using a profile that requires grayscale data. Still an
+                % error if using "ReturnedColorSpace", "grayscale in videoinput
+                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
                 set(new_subject.cam, 'DiskLogger', vid_writer);
                 
+                % Set image acquisition settings
+                set(new_subject.cam.Source, 'Exposure', -8);
+
                 % Start camera
                 start(new_subject.cam);
             end
