@@ -1,6 +1,9 @@
 
 # Created by https://www.gitignore.io/api/matlab,windows
 
+### Blender backup
+.blend1
+
 ### Data
 Data*
 
