@@ -11,3 +11,27 @@ Reproducible in vivo electrophysiology experiments require the collection of dat
 * **Amplifier PCB Designs**: Multi-channel, open source OpBox amplifier PCB designs (3 and 4 channel)
 * **How to Build and Parts List**: How to build information and parts lists for OpBox amplifiers
 * **OpBox Phys Scripts**: MATLAB based scripts to acquire data from OpBox amplifiers, using National Instruments data acquisition devices
+
+
+## Changing Windows USB Webcam names
+* Note, this requires editing the Registry, which should only be undertaken by experienced users at their own risk after backing it up *  
+1. Open Device Manager
+1. Right click on the camera, select Properties
+1. Click on the details tab
+1. Under Property, select Driver Key
+1. Right click and copy the Value
+1. Run regedit.exe
+1. Go to HKEY_LOCAL_MACHINE -> SYSTEM -> ControlSet001 (left click on that)
+1. Ctrl-F to find: paste the Driver Key Value
+1. It should take you to a folder within Enum -> USB
+1. Double Click on Friendly Name and adjust the name (e.g. HD USB Camera -> HD USB Camera 01)
+1. Back to Device Manager, under Property, select Device instance path
+1. Right click and copy the Value
+1. Back to Registry Editor
+1. Go to HKEY_LOCAL_MACHINE -> SYSTEM -> CurrentControlSet
+1. Ctrl-F to find: paste the Device instanc path Value
+1. It should take you to a folder within Control -> DeviceClasses
+1. Go within that folder to #GLOBAL -> Device Parameters
+1. Double Click on Friendly Name and adjust the name (e.g. HD USB Camera -> HD USB Camera 01)
+1. Back to Device Manager -> Action -> Scan for Hardware Changes
+1. You may need to restart Matlab or at least run imaqreset, which will cause problems if OpBox is running, so stop all recordings first

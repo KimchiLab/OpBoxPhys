@@ -14,7 +14,7 @@ if exist('subj_names', 'var') && numel(subj_names)
     for i_subj = 1:numel(subj_names)
         subj_mask = strcmpi(subj_names{i_subj}, {subjects.name});
         subjects(subj_mask) = subjects(subj_mask).FileClose();
-        if ~isempty(subjects(subj_mask).cam_id) && subjects(subj_mask).cam_id > 0 && ~isempty(subjects(subj_mask).cam)
+        if ~isempty(subjects(subj_mask).cam_id) && ~isempty(subjects(subj_mask).cam)
             stop(subjects(subj_mask).cam);
             close(get(subjects(subj_mask).cam, 'DiskLogger')); % File gets shrunk/deleted if closed before video stopped
             delete(subjects(subj_mask).cam);

@@ -43,7 +43,7 @@ for i_subj = 1:numel(subj_names)
             new_subject = new_subject.FileName;
             
             % First set up camera if needed: Will take a little time before ready to save
-            if ~isempty(new_subject.cam_id) && (1 <= new_subject.cam_id)
+            if ~isempty(new_subject.cam_id)
                 % Image Acquisition Toolbox must be installed & windvideo add-on
                 % Check available resolutions:
                 % info = imaqhwinfo('winvideo');
