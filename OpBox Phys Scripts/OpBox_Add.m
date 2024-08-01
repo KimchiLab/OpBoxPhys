@@ -79,7 +79,7 @@ for i_subj = 1:numel(subj_names)
                 % setting configuration: The specified VideoWriter object
                 % is using a profile that requires grayscale data. Still an
                 % error if using "ReturnedColorSpace", "grayscale in videoinput
-                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
+                % set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
                 set(new_subject.cam, 'DiskLogger', vid_writer);
                 
                 % Set image acquisition settings
