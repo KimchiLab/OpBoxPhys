@@ -136,8 +136,8 @@ end
 % Note: USB clocks can not be synchronized in this way
 if num_pci_sync == 2
     % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
-    addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
     % addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
+    addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
     addclock(s_in, "ScanClock", "Dev1/RTSI1", "Dev2/RTSI1");
     % s_in.Connections % shows connections
     fprintf('Synchronized PCI/e device clocks.\n');

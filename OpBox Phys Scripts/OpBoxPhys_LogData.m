@@ -61,7 +61,13 @@ for i_subj = 1:numel(subjects)
             if numel(subjects(i_subj).cam_id)
                 stop(subjects(i_subj).cam);
                 flushdata(subjects(i_subj).cam);
+                
+                % Make sure all data written
+                while (subjects(i_subj).cam.FramesAcquired ~= subjects(i_subj).cam.DiskLoggerFrameCount) 
+                    pause(0.01);
+                end
                 close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+
                 % Camera related file restart
                 vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
                 set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
