@@ -30,25 +30,26 @@ function OpBoxPhys_LogData(src, ~)
 
 global subjects
 
+% Load data
 [new_y_data, new_timestamps, ~] = read(src, src.ScansAvailableFcnCount, "OutputFormat", "Matrix");
-num_new_pts = size(new_y_data,1); % Rows=Timestamps, Cols=Channels
+num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
 
 for i_subj = 1:numel(subjects)
-    % pull out data assigned to just this subject
-    new_subj_data = new_y_data(:, subjects(i_subj).idx_chan);
-
-    % check whether fid for this subject is valid yet?
+    % check whether fid for this subject is valid = open file for logging
     if subjects(i_subj).fid ~= -1
+        % pull out data assigned to just this subject
+        new_subj_data = new_y_data(:, subjects(i_subj).idx_chan);
+
         % then write to the specified file stream
         count = fwrite(subjects(i_subj).fid, [new_timestamps, new_subj_data]', 'double');
         subjects(i_subj).num_ts_written = subjects(i_subj).num_ts_written + count/subjects(i_subj).num_ch; % Really count of numbers written, not bytes, across all channels
         
         % If there is camera data, save the numbers of data timestamps and camera frames
-        if ~isempty(subjects(i_subj).cam_id) && ~isempty(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
+        if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
             % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
             fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
         end
-            
+
         % if a data file size exceeds ts cutoff, flushdata and start recording new files
         if subjects(i_subj).num_ts_written >= subjects(i_subj).num_ts_cutoff
             % Close files phys files
@@ -69,7 +70,9 @@ for i_subj = 1:numel(subjects)
                 close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
 
                 % Camera related file restart
-                vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4'); % Point video writer to new file
+                set(new_subject.cam, 'LoggingMode', 'disk');
+                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
+                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
                 set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
                 start(subjects(i_subj).cam);
             end
@@ -79,7 +82,7 @@ for i_subj = 1:numel(subjects)
         end
         
         %% Plotting data
-        if ~isempty(subjects(i_subj).axis_time) % Make sure field exists
+        if numel(subjects(i_subj).axis_time) % Make sure field exists
             % Time Domain graphs
             old_y_data = get(subjects(i_subj).h_plot_time, 'ydata');
             y_data = old_y_data; % simplifies preallocation warning which would otherwise show up for y_data{i_ch} below
@@ -97,7 +100,7 @@ for i_subj = 1:numel(subjects)
                 end
                 set(subjects(i_subj).h_plot_time, {'ydata'}, y_data);
                 % Time Domain graphs: Counter/Rotary Encoder Data
-                if ~isempty(subjects(i_subj).h_plot_counter)
+                if numel(subjects(i_subj).h_plot_counter)
                     % Currently only support 1 rotary encoder per box
                     subjects(i_subj).h_plot_counter.YData = y_data{subjects(i_subj).num_analog+1};
     %                 set(subjects(i_subj).h_plot_counter, {'ydata'}, y_data{subjects(i_subj).num_analog+1});
@@ -135,7 +138,7 @@ for i_subj = 1:numel(subjects)
             end
     
             % Evoked potential graphs from first digital channel or last analog channel
-            if ~isempty(subjects(i_subj).ch_trigger)
+            if numel(subjects(i_subj).ch_trigger)
                 % Look through new digital data in the window of interest and see if any new events
                 data_event = data(:, subjects(i_subj).ch_trigger); % channel for thresholding/events is the first channel after analog chans
                 idx_zero = numel(data_event) - subjects(i_subj).num_peri - num_new_pts; % have to back off the number of peri timepoints and num new points so that get full window if catch event

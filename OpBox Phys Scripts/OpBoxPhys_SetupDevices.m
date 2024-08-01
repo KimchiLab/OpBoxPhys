@@ -34,7 +34,6 @@ s_in = daq('ni'); % Create a session for National Instruments devices
 % Set standard session parameters:
 s_in.Rate = Fs;
 % s_in.IsContinuous = true;
-% s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 s_in.ScansAvailableFcnCount = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 
 num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware connection later

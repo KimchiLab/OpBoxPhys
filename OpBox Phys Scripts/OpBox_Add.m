@@ -68,14 +68,14 @@ for i_subj = 1:numel(subj_names)
 
                 % Setup Video Logger: save frames to disk with compression
                 set(new_subject.cam, 'LoggingMode', 'disk');
-                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData.
+                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
+                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
                 % vid_writer = VideoWriter(new_subject.filename, 'Grayscale AVI'); 
                 % Does not work with saving grayscale, despite
                 % setting configuration: The specified VideoWriter object
                 % is using a profile that requires grayscale data. Still an
                 % error if using "ReturnedColorSpace", "grayscale in videoinput
-                % set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
-                set(new_subject.cam, 'DiskLogger', vid_writer);
+                set(new_subject.cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
                 
                 % Start camera
                 start(new_subject.cam);

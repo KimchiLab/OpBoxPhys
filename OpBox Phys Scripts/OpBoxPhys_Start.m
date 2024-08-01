@@ -13,14 +13,6 @@ if isempty(s_in)
 elseif s_in.Running
     fprintf('Recording ongoing... Please stop first.\n');
 else
-    % If subjects are available, then see if files are already open
-    % If files are not open (fid == -1) for available subjects, then prep new files for them
-    for i_subj = 1:numel(subjects)
-       if subjects(i_subj).fid == -1
-            subjects(i_subj) = OpBoxPhys_FilePrep(subjects(i_subj));
-       end
-    end
-    
     % Set up listener handles: Access subjects as global var
     s_in.ScansAvailableFcn = @(src, event) OpBoxPhys_LogData(src, event);
     
