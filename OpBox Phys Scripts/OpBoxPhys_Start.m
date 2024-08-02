@@ -9,7 +9,6 @@ global subjects; % defined globally so that listener handles can access updated 
 
 if isempty(s_in)
     fprintf('No NI devices initialized to start listener handles.\n');
-% elseif s_in.IsRunning
 elseif s_in.Running
     fprintf('Recording ongoing... Please stop first.\n');
 else

@@ -112,7 +112,8 @@ for i_subj = 1:numel(subjects)
             if subjects(i_subj).ts_start < 0
                 subjects(i_subj).ts_start = min(new_timestamps);
             end
-            set(subjects(i_subj).h_time_text, 'String', datestr((new_timestamps(end) - subjects(i_subj).ts_start)/86400, 'dd HH:MM:SS'));
+            % set(subjects(i_subj).h_time_text, 'String', datestr((new_timestamps(end) - subjects(i_subj).ts_start)/86400, 'dd HH:MM:SS'));
+            set(subjects(i_subj).h_time_text, 'String', string(seconds(new_timestamps(end) - subjects(i_subj).ts_start), 'dd:hh:mm:ss'));
     
             % Freq Domain graphs
             if iscell(y_data)

@@ -8,8 +8,8 @@ if ~s_in.Running
     fprintf('Recording not ongoing... Please start first.\n');
 else
     % Stop collecting data, delete listener handles, close files
-    lh.draw.Enabled = false;
-    lh.log.Enabled = false;
+    % lh.draw.Enabled = false;
+    % lh.log.Enabled = false;
     
     % Stop cameras
     for i_subj = 1:numel(subjects)

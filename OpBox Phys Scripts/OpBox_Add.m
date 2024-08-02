@@ -16,7 +16,7 @@ end
 
 subj_names = OpBox_SubjectsNames(subj_info);
 
-lh.draw.Enabled = false; % Turn off graphing listener handle during update
+% lh.draw.Enabled = false; % Turn off graphing listener handle during update
 
 % Process each new subject
 for i_subj = 1:numel(subj_names)
@@ -92,13 +92,13 @@ for i_subj = 1:numel(subj_names)
 end
 
 % Resort subjects and redraw graphs
-if ~isempty(subjects)
+if numel(subjects)
     [~, sort_idx] = sort([subjects.box]);
     subjects = subjects(sort_idx);
     subjects = OpBox_Graphs(subjects);
 end
 
 %% Clear data & Change graphs/zoom (back) to default settings
-clearvars -except subjects s_in lh room; % Clear unnecessary variables, only keep those specified here
+clearvars -except subjects s_in room; % Clear unnecessary variables, only keep those specified here
 % OpBox_Axis_Time([0 5], [-0.5 0.5]); % Back to default axes (can't define as part of s_in)
-lh.draw.Enabled = true; % Turn on graphing listener handle after update
+% lh.draw.Enabled = true; % Turn on graphing listener handle after update
