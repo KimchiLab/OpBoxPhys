@@ -11,7 +11,7 @@ else
     % lh.draw.Enabled = false;
     % lh.log.Enabled = false;
     
-    % Stop cameras
+    % Stop recordings, files, and cameras
     for i_subj = 1:numel(subjects)
         subjects(i_subj) = subjects(i_subj).FileClose();
         

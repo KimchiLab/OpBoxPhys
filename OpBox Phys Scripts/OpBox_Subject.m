@@ -52,6 +52,7 @@ classdef OpBox_Subject
         cam
         axis_cam
         h_cam
+        parallelf
     end
 
     

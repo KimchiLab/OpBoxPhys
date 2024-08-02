@@ -40,53 +40,34 @@ for i_subj = 1:numel(subj_names)
             fprintf('Check that the correct DAQ is assigned to this subject/box,\nand that the selected DAQ supports this channel type.\n\n');
         else
             % Subject valid: Setup Filename
-            new_subject = new_subject.FileName;
+            new_subject = new_subject.FileName();
             
             % First set up camera if needed: Will take a little time before ready to save
             if numel(new_subject.cam_id)
-                % Image Acquisition Toolbox must be installed & windvideo add-on
-                % Check available resolutions/formats:
-                % info = imaqhwinfo('winvideo');
-                % info.DeviceInfo.SupportedFormats'
-                % 320/240=1.333
-                % 640/480=1.333
-                % 800/600=1.333
-                % 1024/768=1.333
-                % 1280/720=1.777
-                % 1280/1024=1.23
-                % 1920/1080=1.777
-                str_target_format = 'MJPG_1024x768';
-                % str_target_format = 'MJPG_640x480';
+                % new_subject.cam = OpBoxPhys_CameraPrep(new_subject.cam_id, new_subject.filename);
 
-                % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
-                new_subject.cam = videoinput('winvideo', new_subject.cam_id, str_target_format); 
-                set(new_subject.cam, 'FramesPerTrigger', inf); % Collect continuously once started
-                % set(new_subject.cam, 'FramesAcquiredFcnCount', 30);  % Execute FramesAcquiredFcn every n frames, but doesn't help logging/preview. Also for version that notes timestamps for each frame, currently not used
-
-                % Set image acquisition settings
-                set(new_subject.cam.Source, 'Exposure', -8);
-                % new_subject.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale, despite setting configuration
-
-                % Setup Video Logger: save frames to disk with compression
-                set(new_subject.cam, 'LoggingMode', 'disk');
-                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
-                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
-                % vid_writer = VideoWriter(new_subject.filename, 'Grayscale AVI'); 
-                % Does not work with saving grayscale, despite
-                % setting configuration: The specified VideoWriter object
-                % is using a profile that requires grayscale data. Still an
-                % error if using "ReturnedColorSpace", "grayscale in videoinput
-                set(new_subject.cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
-                
-                % Start camera
-                start(new_subject.cam);
+                % Spin camera into a separate process
+                % https://www.mathworks.com/help/matlab/ref/parfeval.html
+                new_subject.parallelf = parfeval(@OpBoxPhys_CameraPrep, 2, new_subject.cam_id, new_subject.filename);
+                new_subject.parallelf.State
+                while ~strcmpi(new_subject.parallelf.State, 'finished')
+                    % Wait for camera to be initialized
+                end
+                new_subject.parallelf.State
+                pause(10);
+                [cam, cell_cam] = fetchOutputs(new_subject.parallelf)
+                1;
+                % temp_cell = new_subject.parallelf.OutputArguments;
+                % [cam, cell_cam] = temp_cell{1}; % Invalid Image Acquisition object. This object is not associated with any hardware and should be removed from your workspace using CLEAR.
+                % [~, new_subject.cam] = fetchNext(new_subject.parallelf);
+                % new_subject.cam = fetchOutputs(new_subject.parallelf);
+                % [cam, cell_cam] = fetchOutputs(new_subject.parallelf);
             end
             
             % Physiology file starts writing as soon as there is an available fid, set up after camera
-            new_subject = new_subject.FilePrepPhys;
+            new_subject = new_subject.FilePrepPhys();
 
-            subjects = [subjects; new_subject]; % Append new subject
-
+            subjects = [subjects; new_subject]; % Append new subject, sort after
         end
     end
 end

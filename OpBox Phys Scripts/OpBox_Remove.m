@@ -10,7 +10,8 @@ else
     subj_names = OpBox_SubjectsNames(subjects);
 end
 
-if exist('subj_names', 'var') && numel(subj_names)
+if exist('subjects', 'var') && numel(subjects) ...
+        && exist('subj_names', 'var') && numel(subj_names)
     for i_subj = 1:numel(subj_names)
         subj_mask = strcmpi(subj_names{i_subj}, {subjects.name});
         subjects(subj_mask) = subjects(subj_mask).FileClose();
