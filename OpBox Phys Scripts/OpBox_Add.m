@@ -23,7 +23,7 @@ for i_subj = 1:numel(subj_names)
     new_subject = OpBox_Subject(subj_names{i_subj}, room);
     new_subject = new_subject.BoxInfo(box_info, subj_info);
     
-    if ~isempty(subjects) && sum(new_subject.box == [subjects.box])
+    if numel(subjects) && sum(new_subject.box == [subjects.box])
         fprintf('Subject %s not added, Box %d in Room %d already in use.\n', new_subject.name, new_subject.box, new_subject.room);
     elseif isnan(new_subject.box)
         fprintf('Subject %s not added, box not defined for Room %d.\n', new_subject.name, new_subject.room);
@@ -43,7 +43,7 @@ for i_subj = 1:numel(subj_names)
             new_subject = new_subject.FileName;
             
             % First set up camera if needed: Will take a little time before ready to save
-            if ~isempty(new_subject.cam_id)
+            if numel(new_subject.cam_id)
                 % Image Acquisition Toolbox must be installed & windvideo add-on
                 % Check available resolutions/formats:
                 % info = imaqhwinfo('winvideo');
@@ -61,7 +61,7 @@ for i_subj = 1:numel(subj_names)
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
                 new_subject.cam = videoinput('winvideo', new_subject.cam_id, str_target_format); 
                 set(new_subject.cam, 'FramesPerTrigger', inf); % Collect continuously once started
-                % set(new_subject.cam, 'FramesAcquiredFcnCount', 10);  % Execute FramesAcquiredFcn every n frames, but what about logging? also for version that notes timestamps for each frame, currently not used
+                % set(new_subject.cam, 'FramesAcquiredFcnCount', 30);  % Execute FramesAcquiredFcn every n frames, but doesn't help logging/preview. Also for version that notes timestamps for each frame, currently not used
 
                 % Set image acquisition settings
                 set(new_subject.cam.Source, 'Exposure', -8);
