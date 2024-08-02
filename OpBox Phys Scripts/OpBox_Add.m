@@ -61,7 +61,7 @@ for i_subj = 1:numel(subj_names)
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
                 new_subject.cam = videoinput('winvideo', new_subject.cam_id, str_target_format); 
                 set(new_subject.cam, 'FramesPerTrigger', inf); % Collect continuously once started
-                % set(new_subject.cam, 'FramesAcquiredFcnCount', 1);  % For version that notes timestamps for each frame, currently not used
+                % set(new_subject.cam, 'FramesAcquiredFcnCount', 10);  % Execute FramesAcquiredFcn every n frames, but what about logging? also for version that notes timestamps for each frame, currently not used
 
                 % Set image acquisition settings
                 set(new_subject.cam.Source, 'Exposure', -8);
