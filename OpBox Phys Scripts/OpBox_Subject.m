@@ -53,6 +53,7 @@ classdef OpBox_Subject
         axis_cam
         h_cam
         parallelf
+        vidWrapper
     end
 
     

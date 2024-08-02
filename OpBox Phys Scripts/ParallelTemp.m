@@ -1,13 +1,23 @@
-%% https://www.mathworks.com/help/parallel-computing/spmd.html
-% spmd
-%    spmdIndex
-%    spmdSize
-%    % v = videoinput('winvideo', spmdIndex);
-%    % start(v);
-%    v = [spmdIndex, spmdSize]
+% % https://www.mathworks.com/help/parallel-computing/spmd.html
+% % spmd
+% %    spmdIndex
+% %    spmdSize
+% %    v = videoinput('winvideo', spmdIndex);
+% %    start(v);
+% %    % v = [spmdIndex, spmdSize]
+% % end
+% 
+% % str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
+% str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
+% 
+% spmd(numel(str_cam))
+%    v = videoinput('winvideo', str_cam{spmdIndex});
+%    start(v);
 % end
 
-%% https://www.mathworks.com/matlabcentral/answers/1949708-how-to-preview-videos-from-each-spmd-worker-in-parallel-computing-toolbox
+
+
+% https://www.mathworks.com/matlabcentral/answers/1949708-how-to-preview-videos-from-each-spmd-worker-in-parallel-computing-toolbox
 % spmd(2)
 %    spmdIndex
 %    v = videoinput('winvideo', spmdIndex);
@@ -57,17 +67,34 @@
 mkdir("c:\temp\data\")
 % parpool('local');
 clear f
+
+objects = imaqfind;
+delete(objects);
+imaqreset;
+deviceInfo = imaqhwinfo('winvideo')
+
+% f = parfeval(@captureVideo,0, 1)
+
+tic;
 for i = 1:2
-    % f = parfeval(@captureVideo, 0, i);
-    f(i) = parfeval(@captureVideo, 1, i);
-    % f = parfeval(@captureVideo,0, 2)
-    while ~strcmpi('finished', f(i).State)
-        % Wait until ready
-    end
-    v(i) = fetchOutputs(f(i));
+    f(i) = parfeval(@captureVideo, 1, i)
+    %     f(i) = parfeval(@captureVideo, 1, i);
+    %     % f = parfeval(@captureVideo,0, 2)
+    %     % while ~strcmpi('finished', f(i).State)
+    %     %     % Wait until ready
+    %     % end
+    %     % v(i) = fetchOutputs(f(i));
 end
+
+% f
 % wait(f);
-% disp(f);
+% pause(8);
+% clear v;
+% v(1) = fetchOutputs(f(1)); % can't get back while running, coming back as struct or invalid
+% wait(f);
+disp(f);
+toc
+% v
 % clear f
 % delete(gcp("nocreate"))
 
@@ -79,15 +106,15 @@ v = videoinput('winvideo', idx);
 
 % Specify a custom callback to save images.
 % v.FramesAcquiredFcn = @(x)saveImages(idx);
-% v.FramesAcquiredFcn = @(src, evt) saveImages( src,evt,idx);
+v.FramesAcquiredFcn = @(src, evt) saveImages( src,evt,idx);
 
-% % Specify the number of frames to acquire before calling the callback.
-% v.FramesAcquiredFcnCount = 10;
+% Specify the number of frames to acquire before calling the callback.
+v.FramesAcquiredFcnCount = 20;
 
 % % Specify the total number of frames to acquire.
-% v.FramesPerTrigger = 20;
+% % v.FramesPerTrigger = 20;
 % Specify the total number of frames to acquire.
-v.FramesPerTrigger = 100;
+v.FramesPerTrigger = 600;
 
 % Make sure loaded?
 v.Running
@@ -119,3 +146,30 @@ end
 %% https://www.mathworks.com/help/parallel-computing/perform-image-acquisition-from-webcam-and-parallel-image-processing.html
 
 %% parfeval
+
+
+% 
+% 
+% %% Handles and parfeval
+% classdef example_class<handle
+%     properties
+%         A
+%     end
+%     methods
+%         function h=example_class()
+%             h.A=1;
+%         end
+%         function newA = multiply_A(h,data)
+%             % Returns new value, doesn't modify h
+%             newA = h.A;
+%             for m=1:10
+%                  newA = newA*data;
+%             end
+%         end
+%         function apply_A(h, newA)
+%             % Simply modifies h
+%             h.A = newA;
+%         end
+%     end
+% end
+% 

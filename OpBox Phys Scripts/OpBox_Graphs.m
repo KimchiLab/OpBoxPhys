@@ -100,7 +100,11 @@ for i_subj = 1:num_subj
         nBands = subjects(i_subj).cam.NumberOfBands; 
         subjects(i_subj).h_cam = image(subjects(i_subj).axis_cam, zeros(vidRes(2), vidRes(1), nBands) ); 
         axis(subjects(i_subj).axis_cam, 'equal', 'tight');
-        preview(subjects(i_subj).cam, subjects(i_subj).h_cam);
+        try
+            preview(subjects(i_subj).cam, subjects(i_subj).h_cam);
+        catch
+            fprintf('Can not preview camera for subject %d!!!\n', i_subj);
+        end
     else
         set(subjects(i_subj).axis_cam, 'Visible', 'off');
     end

@@ -47,16 +47,21 @@ for i_subj = 1:numel(subj_names)
                 % new_subject.cam = OpBoxPhys_CameraPrep(new_subject.cam_id, new_subject.filename);
 
                 % Spin camera into a separate process
+                % https://www.mathworks.com/matlabcentral/answers/269625-how-to-use-properly-parfor
+                % new_subject.vidWrapper = parallel.pool.Constant(@() videoinput());
+                new_subject.vidWrapper = parallel.pool.Constant(@() videoinput('winvideo', new_subject.cam_id, 'MJPG_1024x768'));
                 % https://www.mathworks.com/help/matlab/ref/parfeval.html
-                new_subject.parallelf = parfeval(@OpBoxPhys_CameraPrep, 2, new_subject.cam_id, new_subject.filename);
-                new_subject.parallelf.State
-                while ~strcmpi(new_subject.parallelf.State, 'finished')
-                    % Wait for camera to be initialized
-                end
-                new_subject.parallelf.State
-                pause(10);
-                [cam, cell_cam] = fetchOutputs(new_subject.parallelf)
-                1;
+                new_subject.parallelf = parfeval(@OpBoxPhys_CameraPrepWrapper, 0, new_subject.vidWrapper.Value, new_subject.filename);
+                new_subject.cam = new_subject.vidWrapper.Value;
+                % new_subject.parallelf = parfeval(@OpBoxPhys_CameraPrep, 0, new_subject.cam_id, new_subject.filename);
+                % new_subject.parallelf.State;
+                % while ~strcmpi(new_subject.parallelf.State, 'finished')
+                %     % Wait for camera to be initialized
+                % end
+                % new_subject.parallelf.State
+                % pause(10);
+                % [cam, cell_cam] = fetchOutputs(new_subject.parallelf)
+                % 1;
                 % temp_cell = new_subject.parallelf.OutputArguments;
                 % [cam, cell_cam] = temp_cell{1}; % Invalid Image Acquisition object. This object is not associated with any hardware and should be removed from your workspace using CLEAR.
                 % [~, new_subject.cam] = fetchNext(new_subject.parallelf);
