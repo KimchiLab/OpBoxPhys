@@ -56,6 +56,7 @@ for i_subj = 1:numel(subj_names)
                 % 1280/1024=1.23
                 % 1920/1080=1.777
                 str_target_format = 'MJPG_1024x768';
+                % str_target_format = 'MJPG_640x480';
 
                 % May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
                 new_subject.cam = videoinput('winvideo', new_subject.cam_id, str_target_format); 
