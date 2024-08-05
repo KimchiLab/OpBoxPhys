@@ -1,21 +1,37 @@
-% % https://www.mathworks.com/help/parallel-computing/spmd.html
-% % spmd
-% %    spmdIndex
-% %    spmdSize
-% %    v = videoinput('winvideo', spmdIndex);
-% %    start(v);
-% %    % v = [spmdIndex, spmdSize]
-% % end
-% 
-% % str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
-% str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
-% 
-% spmd(numel(str_cam))
-%    v = videoinput('winvideo', str_cam{spmdIndex});
+% https://www.mathworks.com/help/parallel-computing/spmd.html
+% spmd
+%    spmdIndex
+%    spmdSize
+%    v = videoinput('winvideo', spmdIndex);
 %    start(v);
+%    % v = [spmdIndex, spmdSize]
 % end
 
+% str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
+str_cam = {'HD USB Camera 01', 'HD USB Camera 02'};
 
+% spmd(numel(str_cam))
+tic;
+pool = parpool('Processes');
+pool.IdleTimeout = minutes(hours(3));
+toc;
+% delete(gcp("nocreate")); % delete at end
+% delete(pool);
+
+idx=1;
+spmd
+   z{idx} = videoinput('winvideo', idx);
+%    start(z);
+end
+
+a=1;
+spmd
+   v = videoinput('winvideo', a);
+%    start(z);
+end
+
+
+% Adjust IdleTimeout > 24 hours?
 
 % https://www.mathworks.com/matlabcentral/answers/1949708-how-to-preview-videos-from-each-spmd-worker-in-parallel-computing-toolbox
 % spmd(2)
@@ -76,7 +92,7 @@ deviceInfo = imaqhwinfo('winvideo')
 % f = parfeval(@captureVideo,0, 1)
 
 tic;
-for i = 1:2
+for i = 1
     f(i) = parfeval(@captureVideo, 1, i)
     %     f(i) = parfeval(@captureVideo, 1, i);
     %     % f = parfeval(@captureVideo,0, 2)
@@ -114,7 +130,7 @@ v.FramesAcquiredFcnCount = 20;
 % % Specify the total number of frames to acquire.
 % % v.FramesPerTrigger = 20;
 % Specify the total number of frames to acquire.
-v.FramesPerTrigger = 600;
+v.FramesPerTrigger = 300;
 
 % Make sure loaded?
 v.Running
