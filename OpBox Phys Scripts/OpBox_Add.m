@@ -142,21 +142,22 @@ for i_subj = 1:numel(subj_names)
                     if spmdIndex == new_subject.cam_idx
                         % Set image acquisition settings
                         set(cam_global.cam.Source, 'Exposure', -8);
-                        cam_global.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale, despite setting configuration unless modifying images
 
                         % Setup Video Logger: save frames to disk with compression
                         cam_global.vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
                         set(cam_global.vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
-                        open(cam_global.vid_writer);
 
-                        % Log by collecting frames, allowing for "preview" within spmd
-                        cam_global.cam.FramesAcquiredFcnCount = 3; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
-                        cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, cam_global.vid_writer};
+                        % Setup Video Logger: save frames to disk with compression: 
+                        % No: if do this, can't peek or otherwise see data easily without also logging to memory
+                        cam_global.cam.LoggingMode = 'disk';
+                        set(cam_global.cam, 'DiskLogger', cam_global.vid_writer); % Point DiskLogger to new video writer
 
-                        % % Setup Video Logger: save frames to disk with compression: 
-                        % % No: if do this, can't peek or otherwise see data easily without also logging to memory
-                        % cam_global.cam.LoggingMode = 'disk';
-                        % set(cam_global.cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
+                        % % Log by collecting frames, allowing for "preview" within spmd: 
+                        % % No: stops after each new camera added?!
+                        % cam_global.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale with DiskLogging, despite setting configuration unless modifying images
+                        % open(cam_global.vid_writer); % Need to open before writing
+                        % cam_global.cam.FramesAcquiredFcnCount = 3; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
+                        % cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, cam_global.vid_writer};
 
                         start(cam_global.cam);
                     end
