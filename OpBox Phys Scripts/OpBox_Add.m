@@ -153,13 +153,15 @@ for i_subj = 1:numel(subj_names)
                         cam_global.cam.FramesAcquiredFcnCount = 3; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
                         cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, cam_global.vid_writer};
 
-                        % % Setup Video Logger: save frames to disk with compression
+                        % % Setup Video Logger: save frames to disk with compression: 
+                        % % No: if do this, can't peek or otherwise see data easily without also logging to memory
                         % cam_global.cam.LoggingMode = 'disk';
                         % set(cam_global.cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
 
                         start(cam_global.cam);
                     end
                 end
+                % new_subject.curr_frame = cam_global{new_subject.cam_idx}.frame;
 
                 %%% parfeval: just use parfeval to write/save frames? via ordered dataqueue?
 
