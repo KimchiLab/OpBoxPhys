@@ -38,10 +38,10 @@ num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
 % Update frame counts
 spmd(numel(cam_global))
     composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
-    % try
-    %     composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
-    % catch
-    %     composite_num_frame = 0;
+    % Peek data for most recent frames? Unfortunately get warning if no frames available
+    % if isrunning(cam_global.cam)
+        % disp(cam_global.cam);
+        % composite_frame = peekdata(cam_global.cam, 1);
     % end
 end
 
@@ -193,6 +193,11 @@ for i_subj = 1:numel(subjects)
                     end
                     set(subjects(i_subj).h_n_peri, 'String', sprintf('%d', old_n+new_n));
                 end
+            end
+
+            % Camera images
+            if numel(subjects(i_subj).cam_str)
+                subjects(i_subj).h_cam.CData = subjects(i_subj).curr_frame;
             end
         end
     end

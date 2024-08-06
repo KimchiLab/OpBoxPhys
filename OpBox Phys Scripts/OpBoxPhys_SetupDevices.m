@@ -199,7 +199,7 @@ spmd(num_cam)
     cam_composite.id = wincam_info.DeviceInfo(spmdIndex).DeviceID;
     cam_composite.idx = spmdIndex;
     cam_composite.cam = videoinput('winvideo', cam_composite.name, str_target_format);
-    cam_composite.frame = zeros(num_row, num_col);
+    cam_composite.frame = uint8(zeros(num_row, num_col));
 end
 
 % Update camera settings
