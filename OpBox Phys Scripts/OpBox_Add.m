@@ -24,9 +24,9 @@ for i_subj = 1:numel(subj_names)
     new_subject = new_subject.BoxInfo(box_info, subj_info);
 
     if numel(subjects) && sum(new_subject.box == [subjects.box])
-        fprintf('Subject %s not added, Box %d in Room %d already in use.\n', new_subject.name, new_subject.box, new_subject.room);
+        fprintf('Subject %s not added, Box %d in Room %s already in use.\n', new_subject.name, new_subject.box, new_subject.room);
     elseif isnan(new_subject.box)
-        fprintf('Subject %s not added, box not defined for Room %d.\n', new_subject.name, new_subject.room);
+        fprintf('Subject %s not added, box not defined for Room %s.\n', new_subject.name, new_subject.room);
     else
         new_subject = new_subject.ChanMatch(s_in);
         if new_subject.num_analog ~= numel(new_subject.idx_analog)

@@ -36,8 +36,13 @@ global cam_global
 num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
 
 % Update frame counts
+% composite_num_frame = Composite();
+% composite_frame = Composite();
+dataqueue = parallel.pool.DataQueue;
+lh_dataqueue = afterEach(dataqueue, @funcDataQueue);
+
 spmd(numel(cam_global))
-    composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
+    % composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
 
     % % Peek data for most recent frames? Unfortunately get warning if no frames available and then memory builds up
     % % Following is Slow for 8 cameras
@@ -45,11 +50,13 @@ spmd(numel(cam_global))
     % composite_frame = squeeze(imgs(:, :, :, end));
 
     % if isrunning(cam_global.cam) && isfield(cam_global.cam, 'UserData') && numel(cam_global.cam.UserData)
-    if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
+    % if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
+    if isrunning(cam_global.cam)
         % Camera images
-        composite_frame = cam_global.cam.UserData;
-    else
-        composite_frame = cam_global.frame;
+        % temp_frame = cam_global.cam.UserData;
+        send(dataqueue, {spmdIndex, cam_global.cam.FramesAcquired, cam_global.cam.UserData});
+    % else
+    %     temp_frame = cam_global.frame;
     end
     % disp(isrunning(cam_global.cam))
     % disp(numel(cam_global.cam.UserData))
@@ -75,7 +82,8 @@ for i_subj = 1:numel(subjects)
         if numel(subjects(i_subj).cam_str) && numel(subjects(i_subj).fid_camsynch) && (subjects(i_subj).fid_camsynch > -1)
             % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
             % fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
-            fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), composite_num_frame{subjects(i_subj).cam_idx}], 'double');
+            % fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), composite_num_frame{subjects(i_subj).cam_idx}], 'double');
+            fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).num_frame], 'double');
         end
 
         % if a data file size exceeds ts cutoff, flushdata and start recording new files
@@ -209,10 +217,19 @@ for i_subj = 1:numel(subjects)
 
             % Camera images
             if numel(subjects(i_subj).cam_str)
-                subjects(i_subj).h_cam.CData = composite_frame{subjects(i_subj).cam_idx};
+                % subjects(i_subj).h_cam.CData = composite_frame{subjects(i_subj).cam_idx};
+                subjects(i_subj).h_cam.CData = subjects(i_subj).curr_frame;
             end
         end
     end
 end
 
+end
 
+%% Extra function
+function funcDataQueue(data)
+    global subjects;
+    mask = [subjects.cam_idx] == data{1};
+    subjects(mask).num_frame = data{2};
+    subjects(mask).curr_frame = data{3};
+end
