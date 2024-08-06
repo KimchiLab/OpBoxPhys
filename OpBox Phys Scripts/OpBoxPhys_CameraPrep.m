@@ -37,4 +37,4 @@ set(cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
 % Start camera
 start(cam);
 
-cell_cam = {cam}; % wrap it to protect it on return from parfeval
+cell_cam = {cam}; % wrap it to protect it on return from parfeval?

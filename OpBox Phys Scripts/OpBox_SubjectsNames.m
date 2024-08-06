@@ -1,6 +1,6 @@
 function subj_names = OpBox_SubjectsNames(subj_info)
 
-if isfield(subj_info, 'group')
+if isprop(subj_info, 'group')
     groups = {subj_info.group};
 else
 	groups = repmat({''}, size(subj_info));  % Groups not a field for any subjects, create blank groups

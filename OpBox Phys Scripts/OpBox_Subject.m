@@ -48,11 +48,16 @@ classdef OpBox_Subject
         num_peri
         ts_start
         % Camera Specific Properties
-        cam_id
+        cam_str
+        cam_idx
         cam
         axis_cam
         h_cam
         parallelf
+        dataqueue
+        lh_dataqueue
+        num_frame
+        curr_frame
         vidWrapper
     end
 
@@ -82,7 +87,7 @@ classdef OpBox_Subject
             subj_info = subj_info(strcmp({subj_info.room}, obj.room));
             idx_subj = find(strcmpi(obj.name, {subj_info.name}));
             % Find box number for this subject
-            if ~isempty(idx_subj)
+            if numel(idx_subj)
                 obj.name = subj_info(idx_subj).name;
                 obj.box = subj_info(idx_subj).box;
                 obj.group = subj_info(idx_subj).group;
@@ -107,7 +112,7 @@ classdef OpBox_Subject
                     fprintf('Type desired box #. Possible = ');
                     fprintf('%d ', [box_info.name]);
                     str = input(sprintf('. (Default = %d): ', obj.box), 's');
-                    if ~isempty(str)
+                    if numel(str)
                         obj.box = str2double(str);
                     end
                 end
@@ -115,7 +120,7 @@ classdef OpBox_Subject
             % Find box info for this box number for this subject
             % [val, idx_a, idx_b] = intersect(obj.box, [box_info.name]); % identify the box index
             [~, ~, idx_b] = intersect(obj.box, [box_info.name]); % identify the box index
-            if ~isempty(idx_b)
+            if numel(idx_b)
                 obj.nidev_analog = box_info(idx_b).nidev_analog;
                 obj.ch_analog = box_info(idx_b).ch_analog;
                 obj.volt_range = box_info(idx_b).volt_range;
@@ -126,7 +131,7 @@ classdef OpBox_Subject
                 obj.ch_offset = box_info(idx_b).ch_offset;
                 obj.nidev_counter = box_info(idx_b).nidev_counter;
                 obj.ch_counter = box_info(idx_b).ch_counter;
-                obj.cam_id = box_info(idx_b).cam;
+                obj.cam_str = box_info(idx_b).cam;
                 if numel(obj.nidev_counter)
                     if obj.nidev_digital ~= obj.nidev_analog || obj.nidev_counter ~= obj.nidev_analog || obj.nidev_digital ~= obj.nidev_counter
                         fprintf('WARNING: NI device numbers differ for data streams: Analog=%d, Digital=%d, Counter=%d\n', obj.nidev_analog, obj.nidev_digital, obj.nidev_counter);
@@ -197,7 +202,7 @@ classdef OpBox_Subject
                 obj.ch_trigger = obj.num_analog + 1;
             end
             % If there is a trigger, set threshold as half of max range
-            if ~isempty(obj.ch_trigger)
+            if numel(obj.ch_trigger)
                 if obj.ch_trigger <= obj.num_analog
                     if obj.trigger_thresh == 0
                         temp_range = get(s_in.Channels(1).Range);
@@ -246,7 +251,8 @@ classdef OpBox_Subject
             fwrite(obj.fid, obj.num_digital,'int');
             
             % Software synchronization of NI data and camera frames: .OpboxCamSymch = .ocs
-            if numel(obj.cam_id) && numel(obj.cam)
+            % if numel(obj.cam_str) && numel(obj.cam)
+            if numel(obj.cam_str)
                 obj.fid_camsynch = fopen([obj.filename '.ocs'], 'w'); % Can get the following Error if not running Matlab as administrator: Invalid file identifier.  Use fopen to generate a valid file identifier. http://stackoverflow.com/questions/10606373/what-causes-an-invalid-file-identifier-in-matlab
                 fwrite(obj.fid_camsynch, 1, 'int'); % File Version Number: Version 1 as of 2020/08/12
                 % File is just a paired list of numbers: NI timestamps acquired and Camera frames acquired, collected each time data from NI is collected
@@ -262,7 +268,7 @@ classdef OpBox_Subject
             [~, file_name] = fileparts(obj.filename);
             fprintf('Closed OpBox files %s (%.1f sec phys data)\n', file_name, obj.num_ts_written/obj.Fs);
             % Close OpboxCameraSynch file if there is one
-            if ~isempty(obj.cam_id) && ~isempty(obj.cam) && (obj.fid_camsynch ~= -1)
+            if numel(obj.cam_str) && numel(obj.fid_camsynch) && (obj.fid_camsynch ~= -1)
                 fclose(obj.fid_camsynch);
                 obj.fid_camsynch = -1;
             end

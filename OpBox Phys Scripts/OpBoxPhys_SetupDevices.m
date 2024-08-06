@@ -1,6 +1,6 @@
 % Set up National Instrument data acquisition devices
 % Using Mathworks Data Acquisition Toolbox
-function [s_in] = OpBoxPhys_SetupDevices(Fs)
+function [s_in, cam_composite, wincam_info] = OpBoxPhys_SetupDevices(Fs)
 
 %% Check matlab version for updated DAQ functions
 % https://www.mathworks.com/help/daq/transition-your-code-from-session-to-dataacquisition-interface.html
@@ -108,7 +108,7 @@ for i_dev = 1:size(nidevs, 1)
     end
     fprintf(' recognized.\n');
     % Add analog channels to session
-    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
+    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage');
     addinput(s_in, name_dev, analog_chans, "Voltage");
     % Add digital channels to session
     if ~isempty(digital_chans)
@@ -124,17 +124,17 @@ end
 
 
 %% Synchronize devices if applicable:
-% If 2 PCI/e cards are being used, then need to synchronize their clocks 
+% If 2 PCI/e cards are being used, then need to synchronize their clocks
 % (must be connected with a 34 pin ribbon (RTSI) cable inside the computer)
-% This is especially important if the channels from 1 subject 
+% This is especially important if the channels from 1 subject
 % (e.g. analog vs. digital) are split between devices)
 % http://www.mathworks.com/help/daq/examples/synchronize-ni-pci-devices-using-rtsi.html
 % Note: Must be done after adding connections
-% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem". 
+% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem".
 % However, still seems to work as long as have an analog channel in use too
 % Note: USB clocks can not be synchronized in this way
 if num_pci_sync == 2
-    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
+    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger');
     % addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
     addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
     addclock(s_in, "ScanClock", "Dev1/RTSI1", "Dev2/RTSI1");
@@ -167,15 +167,76 @@ set(chans(chan_counter), 'EncoderType', 'X4'); % Default X1, res = X1 < X2 < X4.
 %% Finish
 fprintf('Done setting up acquisition devices.\n');
 
+%% Using parallel computing toolbox
+if isempty(gcp("nocreate"))
+    pool = parpool('Processes');
+    pool.IdleTimeout = minutes(hours(3));
+end
+
 %% Try to set up cameras
 if ~exist('imaqhwinfo', 'file')
     fprintf('Image Acquisition Toolbox not found\n');
 else
-%     adaptor_info = imaqhwinfo;
-%     fprintf('%d adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
+    %     adaptor_info = imaqhwinfo;
+    %     fprintf('%d adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
     wincam_info = imaqhwinfo('winvideo');
     fprintf('%d Windows camera device(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(wincam_info.DeviceInfo));
     for i_cam = 1:numel(wincam_info.DeviceInfo)
-        fprintf('%3d: %s\n', wincam_info.DeviceInfo(i_cam).DeviceID, wincam_info.DeviceInfo(i_cam).DeviceName); 
+        fprintf('%3d: %s\n', wincam_info.DeviceInfo(i_cam).DeviceID, wincam_info.DeviceInfo(i_cam).DeviceName);
     end
 end
+
+%% Setup Cameras as spmd pool
+num_cam = numel(wincam_info.DeviceIDs);
+num_row = 768;
+num_col = 1024;
+str_target_format = sprintf('MJPG_%dx%d', num_col, num_row);
+warning('off', 'MATLAB:loadobj');
+
+% Initialize cameras
+spmd(num_cam)
+    cam_composite.name = wincam_info.DeviceInfo(spmdIndex).DeviceName;
+    cam_composite.id = wincam_info.DeviceInfo(spmdIndex).DeviceID;
+    cam_composite.idx = spmdIndex;
+    cam_composite.cam = videoinput('winvideo', cam_composite.name, str_target_format);
+    cam_composite.frame = zeros(num_row, num_col);
+end
+
+% Update camera settings
+spmd(numel(cam_composite))
+    cam_composite.cam.FramesPerTrigger = inf; % Collect continuously once started, triggers error outside of spmd, can't pass back if started?
+
+    % % Setup Video Logger: save frames to disk with compression
+    % % cam_composite.cam.LoggingMode = 'disk';
+    % cam_composite.cam.LoggingMode = 'memory';
+end
+
+% % Update frame counts
+% spmd(numel(cam_composite))
+%     cam_num_frame = cam_composite.cam.FramesAcquired;
+% end
+% 
+% % Start one camera
+% cam_idx_to_change = 1;
+% spmd(numel(cam_composite))
+%     if spmdIndex == cam_idx_to_change
+%         start(cam_composite.cam);
+%     end
+% end
+% 
+% % Stop one camera
+% spmd(numel(cam_composite))
+%     if spmdIndex == cam_idx_to_change
+%         stop(cam_composite.cam);
+%     end
+% end
+% 
+% % Start all cameras
+% spmd(numel(cam_composite))
+%     start(cam_composite.cam);
+% end
+% 
+% % Stop all cameras
+% spmd(numel(cam_composite))
+%     stop(cam_composite.cam);
+% end

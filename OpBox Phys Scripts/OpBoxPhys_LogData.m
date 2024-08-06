@@ -28,11 +28,22 @@ function OpBoxPhys_LogData(src, ~)
 % Updated to new MATLAB DAQ structure, rather than just NI session
 % Combined with plot/drawing function
 
-global subjects
+global subjects 
+global cam_global
 
 % Load data
 [new_y_data, new_timestamps, ~] = read(src, src.ScansAvailableFcnCount, "OutputFormat", "Matrix");
 num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
+
+% Update frame counts
+spmd(numel(cam_global))
+    composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
+    % try
+    %     composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
+    % catch
+    %     composite_num_frame = 0;
+    % end
+end
 
 for i_subj = 1:numel(subjects)
     % check whether fid for this subject is valid = open file for logging
@@ -45,9 +56,14 @@ for i_subj = 1:numel(subjects)
         subjects(i_subj).num_ts_written = subjects(i_subj).num_ts_written + count/subjects(i_subj).num_ch; % Really count of numbers written, not bytes, across all channels
         
         % If there is camera data, save the numbers of data timestamps and camera frames
-        if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
+        % if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
+        %     % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
+        %     fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
+        % end
+        if numel(subjects(i_subj).cam_str) && numel(subjects(i_subj).fid_camsynch) && (subjects(i_subj).fid_camsynch > -1)
             % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
-            fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
+            % fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
+            fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), composite_num_frame{subjects(i_subj).cam_idx}], 'double');
         end
 
         % if a data file size exceeds ts cutoff, flushdata and start recording new files
@@ -59,7 +75,7 @@ for i_subj = 1:numel(subjects)
             subjects(i_subj) = subjects(i_subj).FileName();
 
             % Close & Reopen cam files
-            if numel(subjects(i_subj).cam_id)
+            if numel(subjects(i_subj).cam_str)
                 stop(subjects(i_subj).cam);
                 flushdata(subjects(i_subj).cam);
                 
