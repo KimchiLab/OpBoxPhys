@@ -38,17 +38,22 @@ num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
 % Update frame counts
 spmd(numel(cam_global))
     composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
-    % Peek data for most recent frames? Unfortunately get warning if no frames available
+
+    % % Peek data for most recent frames? Unfortunately get warning if no frames available and then memory builds up
+    % % Following is Slow for 8 cameras
+    % imgs = getdata(cam_global.cam, cam_global.cam.FramesAvailable);
+    % composite_frame = squeeze(imgs(:, :, :, end));
+
     % if isrunning(cam_global.cam) && isfield(cam_global.cam, 'UserData') && numel(cam_global.cam.UserData)
-    % if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
-    %     % Camera images
-    %     composite_frame = cam_global.cam.UserData;
-    % else
-    %     composite_frame = cam_global.frame;
-    % end
+    if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
+        % Camera images
+        composite_frame = cam_global.cam.UserData;
+    else
+        composite_frame = cam_global.frame;
+    end
     % disp(isrunning(cam_global.cam))
     % disp(numel(cam_global.cam.UserData))
-    % disp(isrunning(cam_global.cam) && numel(cam_global.cam.UserData))
+    % disp([isrunning(cam_global.cam), numel(cam_global.cam.UserData), composite_num_frame/1e3])
     % disp([isrunning(cam_global.cam) && numel(cam_global.cam.UserData), composite_num_frame/1e3, mean(composite_frame(:))])
 end
 
@@ -202,10 +207,10 @@ for i_subj = 1:numel(subjects)
                 end
             end
 
-            % % Camera images
-            % if numel(subjects(i_subj).cam_str)
-            %     % subjects(i_subj).h_cam.CData = composite_frame{subjects(i_subj).cam_idx};
-            % end
+            % Camera images
+            if numel(subjects(i_subj).cam_str)
+                subjects(i_subj).h_cam.CData = composite_frame{subjects(i_subj).cam_idx};
+            end
         end
     end
 end

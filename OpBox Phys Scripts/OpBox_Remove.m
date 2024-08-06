@@ -20,13 +20,16 @@ if exist('subjects', 'var') && numel(subjects) ...
                 if spmdIndex == subjects(subj_mask).cam_idx
                     % Setup Video Logger: save frames to disk with compression
                     stop(cam_global.cam);
-                    close(cam_global.vid_writer);
 
-                    % % Make sure all data written via DiskLogger
-                    % while (cam_global.cam.FramesAcquired ~= cam_global.cam.DiskLoggerFrameCount)
-                    %     pause(0.01); % in sec
-                    % end
-                    % close(cam_global.cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+                    if numel(cam_global.cam.DiskLogger)
+                        % Make sure all data written via DiskLogger
+                        while (cam_global.cam.FramesAcquired ~= cam_global.cam.DiskLoggerFrameCount)
+                            pause(0.01); % in sec
+                        end
+                        close(cam_global.cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+                    else
+                        close(cam_global.vid_writer);
+                    end
 
                     % delete(cam_global.cam); % Don't delete, keep active for possible restart. Can delete in stop?
                 end

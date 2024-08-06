@@ -210,33 +210,3 @@ spmd(numel(cam_composite))
     % % cam_composite.cam.LoggingMode = 'disk';
     % cam_composite.cam.LoggingMode = 'memory';
 end
-
-% % Update frame counts
-% spmd(numel(cam_composite))
-%     cam_num_frame = cam_composite.cam.FramesAcquired;
-% end
-% 
-% % Start one camera
-% cam_idx_to_change = 1;
-% spmd(numel(cam_composite))
-%     if spmdIndex == cam_idx_to_change
-%         start(cam_composite.cam);
-%     end
-% end
-% 
-% % Stop one camera
-% spmd(numel(cam_composite))
-%     if spmdIndex == cam_idx_to_change
-%         stop(cam_composite.cam);
-%     end
-% end
-% 
-% % Start all cameras
-% spmd(numel(cam_composite))
-%     start(cam_composite.cam);
-% end
-% 
-% % Stop all cameras
-% spmd(numel(cam_composite))
-%     stop(cam_composite.cam);
-% end
