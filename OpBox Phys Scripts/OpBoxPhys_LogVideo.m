@@ -3,6 +3,9 @@ function OpBoxPhys_LogVideo(src, obj, vid_writer)
 % Read images from the videoinput buffer.
 imgs = getdata(src, src.FramesAvailable);
 writeVideo(vid_writer, imgs);
+src.UserData = squeeze(imgs(:, :, :, end));
+
+% assignin('base','temp','temp');
 
 % Peek data for most recent frames? Unfortunately get warning if no frames available
 % if isrunning(cam_global.cam)

@@ -188,18 +188,18 @@ end
 
 %% Setup Cameras as spmd pool
 num_cam = numel(wincam_info.DeviceIDs);
-num_row = 768;
+num_row = 768; % Based on prior checks of selected cameras
 num_col = 1024;
 str_target_format = sprintf('MJPG_%dx%d', num_col, num_row);
 warning('off', 'MATLAB:loadobj');
 
-% Initialize cameras
+% Initialize camera & general capture info
 spmd(num_cam)
     cam_composite.name = wincam_info.DeviceInfo(spmdIndex).DeviceName;
     cam_composite.id = wincam_info.DeviceInfo(spmdIndex).DeviceID;
     cam_composite.idx = spmdIndex;
-    cam_composite.cam = videoinput('winvideo', cam_composite.name, str_target_format);
     cam_composite.frame = uint8(zeros(num_row, num_col));
+    cam_composite.cam = videoinput('winvideo', cam_composite.name, str_target_format);
 end
 
 % Update camera settings
