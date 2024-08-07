@@ -80,7 +80,7 @@ for i_subj = 1:numel(subjects)
                         % Reset video logging: Camera related file restart
                         % Setup Video Writer: save frames to disk with compression
                         cam_global.vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
-                        set(cam_global.vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
+                        set(cam_global.vid_writer, 'Quality', 30); % 0-100: lower quality/smaller file size, default 75
     
                         % Setup Video Logger
                         % No: if do this, can't peek or otherwise see data easily without also logging to memory
