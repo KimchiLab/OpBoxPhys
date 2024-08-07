@@ -56,6 +56,10 @@ for i_subj = 1:numel(subj_names)
                     pool = parpool('Processes');
                     pool.IdleTimeout = minutes(hours(3));
                 end
+                % Make data queue for sending info back to client from workers
+                if ~exist('dataqueue', 'var')
+                    dataqueue = parallel.pool.DataQueue;
+                end
 
                 % %%% parfeval: talk back via fetchOutputs?
                 % % doesn't work, since fetchOutputs is analogous to saving and reloading vars
@@ -149,7 +153,6 @@ for i_subj = 1:numel(subj_names)
 
                         % Setup Video Logger
                         % No: if do this, can't peek or otherwise see data easily without also logging to memory
-                        % cam_global.cam.LoggingMode = 'disk&memory';
                         cam_global.cam.LoggingMode = 'disk';
                         set(cam_global.cam, 'DiskLogger', cam_global.vid_writer); % Point DiskLogger to new video writer
 
@@ -157,10 +160,12 @@ for i_subj = 1:numel(subj_names)
                         % % No: stops after each new camera added?!
                         % % The problem is that you're trying to send a VideoWriter object to the workers, and that's not allowed. https://www.mathworks.com/matlabcentral/answers/1655195-parfor-for-movie-writevideo
                         % cam_global.cam.LoggingMode = 'memory';
+                        cam_global.cam.LoggingMode = 'disk&memory';
                         % open(cam_global.vid_writer); % Need to open before writing
                         % cam_global.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale with DiskLogging, despite setting configuration unless modifying images
-                        % cam_global.cam.FramesAcquiredFcnCount = 30; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
+                        cam_global.cam.FramesAcquiredFcnCount = 30; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
                         % cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, cam_global.vid_writer};
+                        cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, dataqueue};
 
                         start(cam_global.cam);
                     end
@@ -221,7 +226,7 @@ if numel(subjects)
 end
 
 %% Clear data & Change graphs/zoom (back) to default settings
-clearvars -except subjects s_in room cam_global wincam_info; % Clear unnecessary variables, only keep those specified here
+clearvars -except subjects s_in room cam_global wincam_info dataqueue; % Clear unnecessary variables, only keep those specified here
 % OpBox_Axis_Time([0 5], [-0.5 0.5]); % Back to default axes (can't define as part of s_in)
 % lh.draw.Enabled = true; % Turn on graphing listener handle after update
 

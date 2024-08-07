@@ -42,7 +42,7 @@ if exist('subjects', 'var') && numel(subjects) ...
     end
 end
 
-clearvars -except subjects s_in room cam_global wincam_info; % Clear unnecessary variables, only keep those specified here
+clearvars -except subjects s_in room cam_global wincam_info dataqueue; % Clear unnecessary variables, only keep those specified here
 
 %     subj_names = {subjects.name};
 %     subj_group = {subjects.group};

@@ -33,7 +33,8 @@ addpath(pwd); % Add this directory to path, important for listener handle functi
 
 % Setup devices
 Fs = 1e3; % Sampling rate must be shared amongst all subjects/devices
-[s_in, cam_global, wincam_info] = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
+s_in = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
+[cam_global, wincam_info] = OpBoxPhys_SetupCameras();
 OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
 
 % Additional Scripts

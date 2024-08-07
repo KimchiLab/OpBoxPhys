@@ -1,4 +1,6 @@
-function OpBoxPhys_LogVideo(src, obj, vid_writer)
+function OpBoxPhys_LogVideo(src, obj, dataqueue) % Can't pass videoWriter into function?
+% % The problem is that you're trying to send a VideoWriter object to the workers, and that's not allowed. https://www.mathworks.com/matlabcentral/answers/1655195-parfor-for-movie-writevideo
+
 
 % % Read images from the videoinput buffer.
 % % https://www.mathworks.com/matlabcentral/answers/290312-how-can-we-use-spmd-for-videoreader
@@ -11,6 +13,9 @@ function OpBoxPhys_LogVideo(src, obj, vid_writer)
 imgs = getdata(src, src.FramesAvailable);
 % writeVideo(vid_writer, imgs);
 src.UserData = squeeze(mean(imgs(:, :, :, end), 3));
+
+send(dataqueue, {src.DeviceID, src.FramesAcquired, src.UserData});
+
 
 % assignin('base','temp','temp');
 
@@ -26,7 +31,7 @@ src.UserData = squeeze(mean(imgs(:, :, :, end), 3));
 % cam_global{spmd_idx}.frame = squeeze(mean(imgs(:, :, :, end)));
 
 
-% % Can not pass in global via spmd 
+% % Can not pass in global via spmd
 % % (this function is embedded as a listener handle within spmd loop)
 % global cam_global
 % global subjects

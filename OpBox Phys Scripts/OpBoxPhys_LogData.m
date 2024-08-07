@@ -29,40 +29,41 @@ function OpBoxPhys_LogData(src, ~)
 % Combined with plot/drawing function
 
 global subjects 
-global cam_global
+% global cam_global
 
 % Load data
 [new_y_data, new_timestamps, ~] = read(src, src.ScansAvailableFcnCount, "OutputFormat", "Matrix");
 num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
 
-% Update frame counts
-% composite_num_frame = Composite();
-% composite_frame = Composite();
-dataqueue = parallel.pool.DataQueue;
-lh_dataqueue = afterEach(dataqueue, @funcDataQueue);
-
-spmd(numel(cam_global))
-    % composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
-
-    % % Peek data for most recent frames? Unfortunately get warning if no frames available and then memory builds up
-    % % Following is Slow for 8 cameras
-    % imgs = getdata(cam_global.cam, cam_global.cam.FramesAvailable);
-    % composite_frame = squeeze(imgs(:, :, :, end));
-
-    % if isrunning(cam_global.cam) && isfield(cam_global.cam, 'UserData') && numel(cam_global.cam.UserData)
-    % if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
-    if isrunning(cam_global.cam)
-        % Camera images
-        % temp_frame = cam_global.cam.UserData;
-        send(dataqueue, {spmdIndex, cam_global.cam.FramesAcquired, cam_global.cam.UserData});
-    % else
-    %     temp_frame = cam_global.frame;
-    end
-    % disp(isrunning(cam_global.cam))
-    % disp(numel(cam_global.cam.UserData))
-    % disp([isrunning(cam_global.cam), numel(cam_global.cam.UserData), composite_num_frame/1e3])
-    % disp([isrunning(cam_global.cam) && numel(cam_global.cam.UserData), composite_num_frame/1e3, mean(composite_frame(:))])
-end
+% % Update frame counts
+% % composite_num_frame = Composite();
+% % composite_frame = Composite();
+% dataqueue = parallel.pool.DataQueue;
+% lh_dataqueue = afterEach(dataqueue, @funcDataQueue);
+% 
+% % Try to incorporate dataqueue into LogVideo?
+% spmd(numel(cam_global))
+%     % composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
+% 
+%     % % Peek data for most recent frames? Unfortunately get warning if no frames available and then memory builds up
+%     % % Following is Slow for 8 cameras
+%     % imgs = getdata(cam_global.cam, cam_global.cam.FramesAvailable);
+%     % composite_frame = squeeze(imgs(:, :, :, end));
+% 
+%     % if isrunning(cam_global.cam) && isfield(cam_global.cam, 'UserData') && numel(cam_global.cam.UserData)
+%     % if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
+%     if isrunning(cam_global.cam)
+%         % Camera images
+%         % temp_frame = cam_global.cam.UserData;
+%         send(dataqueue, {spmdIndex, cam_global.cam.FramesAcquired, cam_global.cam.UserData});
+%     % else
+%     %     temp_frame = cam_global.frame;
+%     end
+%     % disp(isrunning(cam_global.cam))
+%     % disp(numel(cam_global.cam.UserData))
+%     % disp([isrunning(cam_global.cam), numel(cam_global.cam.UserData), composite_num_frame/1e3])
+%     % disp([isrunning(cam_global.cam) && numel(cam_global.cam.UserData), composite_num_frame/1e3, mean(composite_frame(:))])
+% end
 
 for i_subj = 1:numel(subjects)
     % check whether fid for this subject is valid = open file for logging
