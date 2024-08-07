@@ -29,41 +29,11 @@ function OpBoxPhys_LogData(src, ~)
 % Combined with plot/drawing function
 
 global subjects
-% global cam_global
+global cam_global % This is only used to restart files, which is slow ~3sec data loss
 
 % Load data
 [new_y_data, new_timestamps, ~] = read(src, src.ScansAvailableFcnCount, "OutputFormat", "Matrix");
 num_new_pts = size(new_y_data, 1); % Rows=Timestamps, Cols=Channels
-
-% % Update frame counts
-% % composite_num_frame = Composite();
-% % composite_frame = Composite();
-% dataqueue = parallel.pool.DataQueue;
-% lh_dataqueue = afterEach(dataqueue, @funcDataQueue);
-%
-% % Try to incorporate dataqueue into LogVideo?
-% spmd(numel(cam_global))
-%     % composite_num_frame = cam_global.cam.FramesAcquired; % in case object destroyed
-%
-%     % % Peek data for most recent frames? Unfortunately get warning if no frames available and then memory builds up
-%     % % Following is Slow for 8 cameras
-%     % imgs = getdata(cam_global.cam, cam_global.cam.FramesAvailable);
-%     % composite_frame = squeeze(imgs(:, :, :, end));
-%
-%     % if isrunning(cam_global.cam) && isfield(cam_global.cam, 'UserData') && numel(cam_global.cam.UserData)
-%     % if isrunning(cam_global.cam) && numel(cam_global.cam.UserData)
-%     if isrunning(cam_global.cam)
-%         % Camera images
-%         % temp_frame = cam_global.cam.UserData;
-%         send(dataqueue, {spmdIndex, cam_global.cam.FramesAcquired, cam_global.cam.UserData});
-%     % else
-%     %     temp_frame = cam_global.frame;
-%     end
-%     % disp(isrunning(cam_global.cam))
-%     % disp(numel(cam_global.cam.UserData))
-%     % disp([isrunning(cam_global.cam), numel(cam_global.cam.UserData), composite_num_frame/1e3])
-%     % disp([isrunning(cam_global.cam) && numel(cam_global.cam.UserData), composite_num_frame/1e3, mean(composite_frame(:))])
-% end
 
 for i_subj = 1:numel(subjects)
     % check whether fid for this subject is valid = open file for logging
@@ -76,14 +46,8 @@ for i_subj = 1:numel(subjects)
         subjects(i_subj).num_ts_written = subjects(i_subj).num_ts_written + count/subjects(i_subj).num_ch; % Really count of numbers written, not bytes, across all channels
 
         % If there is camera data, save the numbers of data timestamps and camera frames
-        % if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam) && (subjects(i_subj).fid_camsynch > -1)
-        %     % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
-        %     fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
-        % end
         if numel(subjects(i_subj).cam_str) && numel(subjects(i_subj).fid_camsynch) && (subjects(i_subj).fid_camsynch > -1)
             % Timestamp X corresponds to Camera Frame Y (pairs of doubles)
-            % fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).cam.FramesAcquired], 'double');
-            % fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), composite_num_frame{subjects(i_subj).cam_idx}], 'double');
             fwrite(subjects(i_subj).fid_camsynch, [new_timestamps(end), subjects(i_subj).num_frame], 'double');
         end
 
@@ -97,21 +61,34 @@ for i_subj = 1:numel(subjects)
 
             % Close & Reopen cam files
             if numel(subjects(i_subj).cam_str)
-                stop(subjects(i_subj).cam);
-                flushdata(subjects(i_subj).cam);
+                spmd(numel(cam_global))
+                    if spmdIndex == subjects(i_subj).cam_idx
+                        % Stop Video logging
+                        stop(cam_global.cam);
+                        flushdata(cam_global.cam);
+    
+                        if numel(cam_global.cam.DiskLogger)
+                            % Make sure all data written via DiskLogger
+                            while (cam_global.cam.FramesAcquired ~= cam_global.cam.DiskLoggerFrameCount)
+                                pause(0.01); % in sec
+                            end
+                            close(cam_global.cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
+                        else
+                            close(cam_global.vid_writer);
+                        end
 
-                % Make sure all data written
-                while (subjects(i_subj).cam.FramesAcquired ~= subjects(i_subj).cam.DiskLoggerFrameCount)
-                    pause(0.01);
+                        % Reset video logging: Camera related file restart
+                        % Setup Video Writer: save frames to disk with compression
+                        cam_global.vid_writer = VideoWriter(subjects(i_subj).filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
+                        set(cam_global.vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
+    
+                        % Setup Video Logger
+                        % No: if do this, can't peek or otherwise see data easily without also logging to memory
+                        set(cam_global.cam, 'DiskLogger', cam_global.vid_writer); % Point DiskLogger to new video writer
+
+                        start(cam_global.cam);
+                    end
                 end
-                close(subjects(i_subj).cam.DiskLogger); % File gets shrunk/deleted if closed before video stopped
-
-                % Camera related file restart
-                set(new_subject.cam, 'LoggingMode', 'disk');
-                vid_writer = VideoWriter(new_subject.filename, 'MPEG-4');  % Make sure this matches OpBoxPhys_LogData & OpBox_Add
-                set(vid_writer, 'Quality', 50); % 0-100: lower quality/smaller file size, default 75
-                set(subjects(i_subj).cam, 'DiskLogger', vid_writer); % Point DiskLogger to new video writer
-                start(subjects(i_subj).cam);
             end
 
             % Physiology file starts writing as soon as there is an available fid, set up after camera
@@ -218,7 +195,6 @@ for i_subj = 1:numel(subjects)
 
             % Camera images
             if numel(subjects(i_subj).cam_str)
-                % subjects(i_subj).h_cam.CData = composite_frame{subjects(i_subj).cam_idx};
                 subjects(i_subj).h_cam.CData = subjects(i_subj).curr_frame;
             end
         end

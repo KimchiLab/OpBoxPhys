@@ -1,6 +1,7 @@
 % function OpBox_SubjectsRemove(lh)
 %
 % global subjects; % Global for listener handle purposes
+% global cam_global; % Global for spmd purposes
 
 if isempty(subjects)
     fprintf('No subjects left to remove.\n');
@@ -20,6 +21,7 @@ if exist('subjects', 'var') && numel(subjects) ...
                 if spmdIndex == subjects(subj_mask).cam_idx
                     % Setup Video Logger: save frames to disk with compression
                     stop(cam_global.cam);
+                    flushdata(cam_global.cam);
 
                     if numel(cam_global.cam.DiskLogger)
                         % Make sure all data written via DiskLogger

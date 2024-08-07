@@ -53,14 +53,9 @@ classdef OpBox_Subject
         cam
         axis_cam
         h_cam
-        parallelf
-        dataqueue
-        lh_dataqueue
         num_frame
         curr_frame
-        vidWrapper
     end
-
     
     methods
         function obj = OpBox_Subject(subj_name, room)

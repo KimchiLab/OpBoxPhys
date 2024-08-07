@@ -155,7 +155,7 @@ for i_subj = 1:numel(subj_names)
                         cam_global.cam.LoggingMode = 'disk&memory';
                         % open(cam_global.vid_writer); % Need to open before writing
                         % cam_global.cam.ReturnedColorspace = "grayscale"; % Does not work with saving grayscale with DiskLogging, despite setting configuration unless modifying images
-                        cam_global.cam.FramesAcquiredFcnCount = 30; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
+                        cam_global.cam.FramesAcquiredFcnCount = 3; % Number of frames that must be acquired before frames acquired event is generated 3 = ~100ms
                         % cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, cam_global.vid_writer};
                         cam_global.cam.FramesAcquiredFcn = {@OpBoxPhys_LogVideo, dataqueue};
 
