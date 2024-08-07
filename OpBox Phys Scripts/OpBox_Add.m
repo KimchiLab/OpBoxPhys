@@ -51,16 +51,8 @@ for i_subj = 1:numel(subj_names)
                 % % Fast enough? Nope, slowing acq/update >=6 cameras
                 % new_subject.cam = OpBoxPhys_CameraPrep(new_subject.cam_str, new_subject.filename);
 
-                %%% Using parallel computing toolbox
-                if isempty(gcp("nocreate"))
-                    pool = parpool('Processes');
-                    pool.IdleTimeout = minutes(hours(3));
-                end
-                % Make data queue for sending info back to client from workers
-                if ~exist('dataqueue', 'var')
-                    dataqueue = parallel.pool.DataQueue;
-                end
-
+                %%% Set up parallel pool and dataqueue and listerner in OpBoxPhys_SetupCameras.m
+                
                 % %%% parfeval: talk back via fetchOutputs?
                 % % doesn't work, since fetchOutputs is analogous to saving and reloading vars
                 % % and can't save/reload videoinput class vars

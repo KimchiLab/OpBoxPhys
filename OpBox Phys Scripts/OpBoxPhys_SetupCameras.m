@@ -1,11 +1,17 @@
 % Set up National Instrument data acquisition devices
 % Using Mathworks Data Acquisition Toolbox
-function [cam_composite, wincam_info] = OpBoxPhys_SetupCameras()
+function [cam_composite, wincam_info, dataqueue] = OpBoxPhys_SetupCameras()
 
 %% Using parallel computing toolbox
 if isempty(gcp("nocreate"))
     pool = parpool('Processes');
     pool.IdleTimeout = minutes(hours(3));
+end
+
+% Make data queue for sending info back to client from workers
+if ~exist('dataqueue', 'var')
+    dataqueue = parallel.pool.DataQueue;
+    afterEach(dataqueue, @OpBoxPhys_ProcessDataQueue);
 end
 
 %% Try to set up cameras

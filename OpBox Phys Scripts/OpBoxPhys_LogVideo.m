@@ -1,7 +1,6 @@
 function OpBoxPhys_LogVideo(src, obj, dataqueue) % Can't pass videoWriter into function?
 % % The problem is that you're trying to send a VideoWriter object to the workers, and that's not allowed. https://www.mathworks.com/matlabcentral/answers/1655195-parfor-for-movie-writevideo
 
-
 % % Read images from the videoinput buffer.
 % % https://www.mathworks.com/matlabcentral/answers/290312-how-can-we-use-spmd-for-videoreader
 % while src.FramesAvailable
@@ -12,9 +11,9 @@ function OpBoxPhys_LogVideo(src, obj, dataqueue) % Can't pass videoWriter into f
 % Read images from the videoinput buffer.
 imgs = getdata(src, src.FramesAvailable);
 % writeVideo(vid_writer, imgs);
-src.UserData = squeeze(mean(imgs(:, :, :, end), 3));
+% src.UserData = squeeze(mean(imgs(:, :, :, end), 3));
 
-send(dataqueue, {src.DeviceID, src.FramesAcquired, src.UserData});
+send(dataqueue, {src.DeviceID, src.FramesAcquired, squeeze(mean(imgs(:, :, :, end), 3))});
 
 
 % assignin('base','temp','temp');
