@@ -38,17 +38,11 @@ Reproducible in vivo electrophysiology experiments require the collection of dat
 
 ## FYI: Pinnacle 2 EEG/ 1 EMG Connections
 
-| Pin | Mouse Connection | Description |
-| --- | --- | --- |
-| Ant Left | AGND | Ground |
-| Ant Mid | EEG2| EEG2+ |
-| Ant Right | EMG B | EMG- |
-| Post Left | EEG Common | EEG Ref |
-| Post Mid | EEG1 | EEG1- |
-| Post Right | EMG A | EMG+ |
-
-| Channel | Mouse Connection | Description |
-| --- | --- | --- |
-| A/1 | EEG R Post-L Post | Contra-Horizontal Post |
-| B/2 | EEG R Ant-L Post | Contra-Longitudinal AP |
-| C/3 | EMG R - L | EMG |
+| Mouse Connection | Pinnacle Connector | Pinnacle Label | Plastics1 Cable Color | Plug Pos | Commutator Socket Pos | Commutator color | Amp Channel | BNC Channel | Matlab Color | Desc |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EEG Ant Left | Ant Left | AGND | Red | 4 | 6 | ***Black*** | G | | | |
+| EEG Ant Right | Ant Mid | EEG2 | White | 5 | 5 | White | EEG B | 2 | Orange | Contra-A/P|
+| EMG Right | Ant Right | EMG B | Black | 6 | 4 | ***Red*** | EMG | | | |
+| EEG Post Left | Post Left | EEG Common | Green | 1 | 1 | Green | EEG Ref | | | |
+| EEG Post Right | Post Mid | EEG1 | Blue | 2 | 2 | Blue | EEG A | 1 | Blue | Contra-Horiz |
+| EMG Left | Post Right | EMG A | Yellow | 3 | 3 | Yellow | EMG | 3 | Yellow | EMG |
