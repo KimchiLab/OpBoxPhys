@@ -108,7 +108,7 @@ for i_dev = 1:size(nidevs, 1)
     end
     fprintf(' recognized.\n');
     % Add analog channels to session
-    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
+    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage');
     addinput(s_in, name_dev, analog_chans, "Voltage");
     % Add digital channels to session
     if ~isempty(digital_chans)
@@ -124,17 +124,17 @@ end
 
 
 %% Synchronize devices if applicable:
-% If 2 PCI/e cards are being used, then need to synchronize their clocks 
+% If 2 PCI/e cards are being used, then need to synchronize their clocks
 % (must be connected with a 34 pin ribbon (RTSI) cable inside the computer)
-% This is especially important if the channels from 1 subject 
+% This is especially important if the channels from 1 subject
 % (e.g. analog vs. digital) are split between devices)
 % http://www.mathworks.com/help/daq/examples/synchronize-ni-pci-devices-using-rtsi.html
 % Note: Must be done after adding connections
-% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem". 
+% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem".
 % However, still seems to work as long as have an analog channel in use too
 % Note: USB clocks can not be synchronized in this way
 if num_pci_sync == 2
-    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
+    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger');
     % addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
     addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
     addclock(s_in, "ScanClock", "Dev1/RTSI1", "Dev2/RTSI1");
@@ -166,16 +166,3 @@ set(chans(chan_counter), 'EncoderType', 'X4'); % Default X1, res = X1 < X2 < X4.
 
 %% Finish
 fprintf('Done setting up acquisition devices.\n');
-
-%% Try to set up cameras
-if ~exist('imaqhwinfo', 'file')
-    fprintf('Image Acquisition Toolbox not found\n');
-else
-%     adaptor_info = imaqhwinfo;
-%     fprintf('%d adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
-    wincam_info = imaqhwinfo('winvideo');
-    fprintf('%d Windows camera device(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(wincam_info.DeviceInfo));
-    for i_cam = 1:numel(wincam_info.DeviceInfo)
-        fprintf('%3d: %s\n', wincam_info.DeviceInfo(i_cam).DeviceID, wincam_info.DeviceInfo(i_cam).DeviceName); 
-    end
-end

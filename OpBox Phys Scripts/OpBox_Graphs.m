@@ -91,20 +91,24 @@ for i_subj = 1:num_subj
     c=get(subjects(i_subj).axis_ep,'Children'); %Get the handles for the child objects from the current axes
     set(subjects(i_subj).axis_ep,'Children',flipud(c)) %Invert the order of the objects
     
-    % Prep cam plot
+    % Prep cam plot: turned off for now
     subjects(i_subj).axis_cam = axes_cam(i_subj);
     % axes(subjects(i_subj).axis_cam); % matlab warns this is slow in a for loop, but necessary for axis adjustments and only run once here
-    if numel(subjects(i_subj).cam)
-        % Add preview function
-        vidRes = subjects(i_subj).cam.VideoResolution; 
-        nBands = subjects(i_subj).cam.NumberOfBands; 
-        subjects(i_subj).h_cam = image(subjects(i_subj).axis_cam, zeros(vidRes(2), vidRes(1), nBands) ); 
+    if numel(subjects(i_subj).cam_str)
+        subjects(i_subj).h_cam = image(subjects(i_subj).axis_cam, subjects(i_subj).curr_frame); 
         axis(subjects(i_subj).axis_cam, 'equal', 'tight');
-        try
-            preview(subjects(i_subj).cam, subjects(i_subj).h_cam);
-        catch
-            fprintf('Can not preview camera for subject %d!!!\n', i_subj);
-        end
+        set(subjects(i_subj).axis_cam, 'Box', 'off', 'XTick', [], 'YTick', [], 'XColor', 'none', 'YColor', 'none');
+        colormap(subjects(i_subj).axis_cam, 'gray');
+        % % Add preview function
+        % vidRes = subjects(i_subj).cam.VideoResolution; 
+        % nBands = subjects(i_subj).cam.NumberOfBands; 
+        % subjects(i_subj).h_cam = image(subjects(i_subj).axis_cam, zeros(vidRes(2), vidRes(1), nBands) ); 
+        % axis(subjects(i_subj).axis_cam, 'equal', 'tight');
+        % try
+        %     preview(subjects(i_subj).cam, subjects(i_subj).h_cam);
+        % catch
+        %     fprintf('Can not preview camera for subject %d!!!\n', i_subj);
+        % end
     else
         set(subjects(i_subj).axis_cam, 'Visible', 'off');
     end

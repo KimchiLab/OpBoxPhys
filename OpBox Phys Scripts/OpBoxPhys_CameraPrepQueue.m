@@ -1,6 +1,6 @@
-function cam = OpBoxPhys_CameraPrepWrapper(cam_id, cam_filename, dataqueue, vidwrapper)
+function cam = OpBoxPhys_CameraPrepQueue(cam_id, cam_filename, dataqueue)
 
-% Image Acquisition Toolbox must be installed & windvideo add-on
+% Image Acquisition Toolbox must be installed & winvideo add-on
 % Check available resolutions/formats:
 % info = imaqhwinfo('winvideo');
 % info.DeviceInfo.SupportedFormats'
@@ -14,11 +14,10 @@ function cam = OpBoxPhys_CameraPrepWrapper(cam_id, cam_filename, dataqueue, vidw
 str_target_format = 'MJPG_1024x768';
 % str_target_format = 'MJPG_640x480';
 
-% Doesn't work if make cam inside: 
-% vidwrapper.Value = cam; % Unable to set the 'Value' property of class 'Constant' because it is read-only.
-cam = vidwrapper.Value; % Error occurred while creating parallel.pool.Constant on the workers. Sometimes works for 1 but not all?
-
-cam.Tag = cam_id; % Save usable name
+% May have to match cam ID if not in order? But have to assume so here, should be changed in csv file
+cam = videoinput('winvideo', cam_id, str_target_format);
+% cam.Name = cam_id; % Overwrite internal less informative name, have not yet figured out where to get this, as it must be stored based on disp(cam)
+cam.Tag = cam_id; % Overwrite internal less informative name, have not yet figured out where to get this, as it must be stored based on disp(cam)
 
 cam.FramesPerTrigger = inf; % Collect continuously once started
 % set(cam, 'FramesAcquiredFcnCount', 30);  % Execute FramesAcquiredFcn every n frames, but doesn't help logging/preview. Also for version that notes timestamps for each frame, currently not used

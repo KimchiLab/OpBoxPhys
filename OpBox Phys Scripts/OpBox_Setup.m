@@ -25,6 +25,7 @@ clf;
 room = '13-341'; % Should be char/string
 
 global subjects; % Need to declare before setting up listener handles, Global so that listener handles can catch changes
+global cam_global; % Need to declare before setting up listener handles, Global so that listener handles can catch changes
 
 % Go to Directory to store data
 cd(fileparts(mfilename('fullpath'))); % Start at the directory of this mfile
@@ -33,6 +34,7 @@ addpath(pwd); % Add this directory to path, important for listener handle functi
 % Setup devices
 Fs = 1e3; % Sampling rate must be shared amongst all subjects/devices
 s_in = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
+[cam_global, wincam_info, dataqueue] = OpBoxPhys_SetupCameras();
 OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
 
 % Additional Scripts

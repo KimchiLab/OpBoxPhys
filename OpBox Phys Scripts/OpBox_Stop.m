@@ -15,7 +15,7 @@ else
     for i_subj = 1:numel(subjects)
         subjects(i_subj) = subjects(i_subj).FileClose();
         
-        if numel(subjects(i_subj).cam_id) && numel(subjects(i_subj).cam)
+        if numel(subjects(i_subj).cam_str) && numel(subjects(i_subj).cam)
             try
                 stop(subjects(i_subj).cam);
                 close(get(subjects(i_subj).cam, 'DiskLogger'));
