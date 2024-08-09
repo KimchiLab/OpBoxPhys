@@ -49,6 +49,6 @@ Reproducible in vivo electrophysiology experiments require the collection of dat
 
 | Channel | Mouse Connection | Description |
 | --- | --- | --- |
-| A/1 | EEG R Post-L Post | Contra-Horizontal |
-| B/2 | EEG R Ant-L Post | Contra-AP |
+| A/1 | EEG R Post-L Post | Contra-Horizontal Post |
+| B/2 | EEG R Ant-L Post | Contra-Longitudinal AP |
 | C/3 | EMG R - L | EMG |
