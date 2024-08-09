@@ -59,19 +59,10 @@ classdef OpBox_Subject
     
     methods
         function obj = OpBox_Subject(subj_name, room)
-            if nargin < 2
-                % Get room number
-                % room = input('\nEnter Room #: ');
-                room = '110';
-                if nargin < 1
-                    % Get subject names and planned boxes (Can store putative boxes for each subject elsewhere)
-                    % subj_str = input('\nEnter subject names (sep by spaces): ', 's');
-                    subj_name = 'Test';
-                end
-            end
             obj.room = room;
             obj.name = subj_name;
             obj.ts_start = -1;
+            obj.group = '';
         end
         
         function obj = BoxInfo(obj, box_info, subj_info)

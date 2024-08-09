@@ -5,7 +5,11 @@ if sum(isprop(subj_info, 'group')) || sum(isfield(subj_info, 'group'))
 else
 	groups = repmat({''}, size(subj_info));  % Groups not a field for any subjects, create blank groups
 end
-name_groups = unique(groups);
+if sum(cellfun(@numel, groups))
+    name_groups = unique(groups);
+else
+    name_groups = {};
+end
 
 fprintf('\nPossible subjects for room %s:\n', subj_info(1).room);
 % if isnumeric(subj_info(1).room)

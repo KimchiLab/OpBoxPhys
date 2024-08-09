@@ -7,7 +7,6 @@ Reproducible in vivo electrophysiology experiments require the collection of dat
 
 
 ## Folders
-
 * **Amplifier PCB Designs**: Multi-channel, open source OpBox amplifier PCB designs (3 and 4 channel)
 * **How to Build and Parts List**: How to build information and parts lists for OpBox amplifiers
 * **OpBox Phys Scripts**: MATLAB based scripts to acquire data from OpBox amplifiers, using National Instruments data acquisition devices
@@ -35,3 +34,21 @@ Reproducible in vivo electrophysiology experiments require the collection of dat
 1. Double Click on Friendly Name and adjust the name (e.g. HD USB Camera -> HD USB Camera 01)
 1. Back to Device Manager -> Action -> Scan for Hardware Changes
 1. You may need to restart Matlab or at least run imaqreset, which will cause problems if OpBox is running, so stop all recordings first
+
+
+## FYI: Pinnacle 2 EEG/ 1 EMG Connections
+
+| Pin | Mouse Connection | Description |
+| --- | --- | --- |
+| Ant Left | AGND | Ground |
+| Ant Mid | EEG2| EEG2+ |
+| Ant Right | EMG B | EMG- |
+| Post Left | EEG Common | EEG Ref |
+| Post Mid | EEG1 | EEG1- |
+| Post Right | EMG A | EMG+ |
+
+| Channel | Mouse Connection | Description |
+| --- | --- | --- |
+| A/1 | EEG R Post-L Post | Contra-Horizontal |
+| B/2 | EEG R Ant-L Post | Contra-AP |
+| C/3 | EMG R - L | EMG |

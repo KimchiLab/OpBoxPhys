@@ -1,9 +1,9 @@
 Room,Box,NIDevAnalog,ChAnalog,VoltRange,NIDevDigital,ChDigital,ChTrigger,TriggerThresh,ChOffset,NIDevCounter,ChCounter,MatlabCamera
 13-341,1,1,0 1 2,,1,,,,,1,,HD Usb Camera 01
 13-341,2,1,4 5 6,,1,,,,,1,,HD Usb Camera 02
-13-341,3,1,17 18 19,,1,,,,,1,,HD Usb Camera 03
+13-341,3,1,16 17 18,,1,,,,,1,,HD Usb Camera 03
 13-341,4,1,20 21 22,,1,,,,,1,,HD Usb Camera 04
 13-341,5,2,0 1 2,,2,,,,,2,,HD Usb Camera 05
 13-341,6,2,4 5 6,,2,,,,,2,,HD Usb Camera 06
-13-341,7,2,17 18 19,,2,,,,,2,,HD Usb Camera 07
+13-341,7,2,16 17 18,,2,,,,,2,,HD Usb Camera 07
 13-341,8,2,20 21 22,,2,,,,,2,,HD Usb Camera 08
