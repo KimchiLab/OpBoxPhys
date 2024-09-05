@@ -52,7 +52,6 @@ for i_subj = 1:numel(subj_names)
                 % new_subject.cam = OpBoxPhys_CameraPrep(new_subject.cam_str, new_subject.filename);
 
                 %%% Set up parallel pool and dataqueue and listerner in OpBoxPhys_SetupCameras.m
-                
                 % %%% parfeval: talk back via fetchOutputs?
                 % % doesn't work, since fetchOutputs is analogous to saving and reloading vars
                 % % and can't save/reload videoinput class vars
