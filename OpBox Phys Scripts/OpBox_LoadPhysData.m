@@ -110,19 +110,17 @@ if exist(filename_ocs, 'file')
     if data.ver_camsynch == 1
         temp_data = fread(fid_ocs, 'double');
         data.camsynch = reshape(temp_data, [2, numel(temp_data)/2])';
+        % Assign/Interpolate a timepoint for every frame based on interpolation
+        num_frames = data.camsynch(end, 2);
+        idx_new_frames = find(diff(data.camsynch(:, 2))>0) + 1;
+        % Genearte new time series
+        data.ts_frame = nan(1, num_frames);
+        data.ts_frame(data.camsynch(idx_new_frames, 2)) = data.camsynch(idx_new_frames, 1);
+        % Interpolate missing frame timestamps
+        mask_nan = isnan(data.ts_frame);
+        idx    = 1:numel(data.ts_frame);
+        data.ts_frame(mask_nan) = interp1(idx(~mask_nan), data.ts_frame(~mask_nan), idx(mask_nan));
     end
     fclose(fid_ocs); % Close access to file
     
-    % Assign/Interpolate a timepoint for every frame based on interpolation
-    num_frames = data.camsynch(end, 2);
-    idx_new_frames = find(diff(data.camsynch(:, 2))>0) + 1;
-    
-    % Genearte new time series
-    data.ts_frame = nan(1, num_frames);
-    data.ts_frame(data.camsynch(idx_new_frames, 2)) = data.camsynch(idx_new_frames, 1);
-    
-    % Interpolate missing frame timestamps
-    mask_nan = isnan(data.ts_frame);
-    idx    = 1:numel(data.ts_frame);
-    data.ts_frame(mask_nan) = interp1(idx(~mask_nan), data.ts_frame(~mask_nan), idx(mask_nan));
 end
