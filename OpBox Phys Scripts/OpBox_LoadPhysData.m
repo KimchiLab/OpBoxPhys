@@ -1,4 +1,4 @@
-% function [data] = OpBox_LoadPhysData(filename_bin, ch_crop_analog)
+% function data = OpBox_LoadPhysData(filename_bin, ch_crop_analog)
 % Eyal Kimchi
 % 2016/05/12
 %
@@ -96,6 +96,9 @@ else
     %     end
     
     %     fprintf('Loaded phys data from %s (%.1f sec)\n', data.filename, toc);
+
+    % Set start time
+    data.dts_start = datetime(data.filename(end-18:end-4), 'InputFormat', 'yyyyMMdd-HHmmss');
 end
 
 %% Check if there is a OpBox Cam Synch file
@@ -122,5 +125,4 @@ if exist(filename_ocs, 'file')
         data.ts_frame(mask_nan) = interp1(idx(~mask_nan), data.ts_frame(~mask_nan), idx(mask_nan));
     end
     fclose(fid_ocs); % Close access to file
-    
 end

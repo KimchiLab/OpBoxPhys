@@ -1,7 +1,7 @@
-%%% PREPARATION OF SUBPLOTS %%%%%%%%%%%%%%%%%%%%%
+%% PREPARATION OF SUBPLOTS
 % function [grid_raster, grid_peth, figures] = AxesEEGs(total_rows, total_cols, raster_ratio, max_rows, max_cols);
 % max_cols function is not currently working, need to be specified in total_cols, can adjust later to extend right over figures (in addition to down, which is already done)
-function [axes_time, axes_freq, axes_ep, axes_cam, figures] = AxesEEGs(num_subj)
+function [axes_time, axes_freq, axes_ep, axes_cam, figures] = OpBox_Axes(num_subj)
 
 % Changes Text Interpreter so that 
 % underscores will print as underscores, rather than subcripts chars
@@ -49,11 +49,13 @@ freq_height = height - time_height;
 phys_width = width * phys_ratio_horiz;
 freq_width = phys_width * freq_ratio_horiz;
 ep_width = phys_width - freq_width;
-cam_width = width - phys_width;
+% cam_width = width - phys_width;
 
-axes_time = [];
-axes_freq = [];
-axes_ep = [];
+figures = gobjects(num_figs, 1);
+axes_time = gobjects(num_subj, 1);
+axes_freq = gobjects(num_subj, 1);
+axes_ep = gobjects(num_subj, 1);
+axes_cam = gobjects(num_subj, 1);
 
 for i_fig = 1:num_figs
     if 1 == num_figs
@@ -120,10 +122,6 @@ for i_fig = 1:num_figs
                  height - (margin_intra_vert + margin_inter_vert)/2]);
             set(gca, 'Box', 'off', 'XTick', [], 'YTick', []);
             axis equal;
-%                  ep_width - margin_intra_horiz/2  - margin_inter_horiz/4, ...
-
         end
     end
-%  	set(axes_time, 'XTick', [], 'YTick', []);
-%  	set(axes_freq, 'XAxisLocation', 'bottom', 'YAxisLocation', 'left');
 end

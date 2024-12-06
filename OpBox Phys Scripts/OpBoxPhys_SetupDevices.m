@@ -2,6 +2,13 @@
 % Using Mathworks Data Acquisition Toolbox
 function [s_in] = OpBoxPhys_SetupDevices(Fs)
 
+%% Check matlab version for updated DAQ functions
+% https://www.mathworks.com/help/daq/transition-your-code-from-session-to-dataacquisition-interface.html
+v = ver;
+if datetime(v(1).Date) < datetime(2020, 1, 1)
+    fprintf('This version of OpBox only supports MATLAB R2020a and later')
+end
+
 %% Default Parameters
 % Sampling rate if none specified
 if nargin < 1
@@ -10,29 +17,33 @@ end
 
 %% Initialize National Instruments Device & Add Analog&Digital Input/Output Channels
 fprintf('\nOpBox: Initializing devices...\n');
-if ~exist('daq')
+if ~exist('daq', 'file')
     fprintf('daq from Data Acquisition Toolbox not found\n');
 end
-nidevs = daq.getDevices; % Gets device info
+% nidevs = daq.getDevices; % Gets device info
+nidevs = daqlist; % Gets device info
 if 0 == numel(nidevs)
     fprintf('No NI devices found to setup OpBox.\nPlease make sure NI-DAQmx drivers are installed and NI DAQ devices are connected.\n');
     s_in = [];
     return;
 end
 
-s_in = daq.createSession('ni'); % Create a session for National Instruments devices
+% s_in = daq.createSession('ni'); % Create a session for National Instruments devices
+s_in = daq('ni'); % Create a session for National Instruments devices
 
 % Set standard session parameters:
 s_in.Rate = Fs;
-s_in.IsContinuous = true;
-s_in.NotifyWhenDataAvailableExceeds = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
+% s_in.IsContinuous = true;
+s_in.ScansAvailableFcnCount = s_in.Rate / 10; % Updates based on loops/sec, up to 20 Hz. 10 = 10 Hz = 100ms. This will likely be slower than camera frame rate (usu 30 Hz)
 
 num_pci_sync = 0; % If find 2 PCI devices, then will try to sync via hardware connection later
 
 % initialize all channels from all devices
-for i_dev = 1:numel(nidevs)
-    name_dev = get(nidevs(i_dev), 'ID');
-    dev_model = get(nidevs(i_dev), 'Model'); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
+for i_dev = 1:size(nidevs, 1)
+    % name_dev = get(nidevs(i_dev), 'ID');
+    % dev_model = get(nidevs(i_dev), 'Model'); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
+    name_dev = nidevs.DeviceID(i_dev);
+    dev_model = nidevs.Model(i_dev); % have to know which channels are differential, can not easily figure out posthoc reliably for each device
     fprintf('%3d: %s = %s', i_dev, dev_model, name_dev);
     % subsys = get(nidevs(i_dev), 'Subsystems');
     digital_chans = ''; % Specified as text
@@ -42,6 +53,7 @@ for i_dev = 1:numel(nidevs)
             analog_chans = [0:7, 16:23];
             digital_chans = '0:31';
             num_pci_sync = num_pci_sync + 1;
+            counter_chans = [0 1 2 3]; % 4 counter channels: https://www.ni.com/docs/en-US/bundle/pcie-6323-specs/page/specs.html
             volt_range = 1;
         case 'PCI-6225'
             analog_chans = [0:7, 16:23, 32:39, 48:55, 64:71];
@@ -96,31 +108,36 @@ for i_dev = 1:numel(nidevs)
     end
     fprintf(' recognized.\n');
     % Add analog channels to session
-    s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage'); 
+    % s_in.addAnalogInputChannel(name_dev, analog_chans, 'Voltage');
+    addinput(s_in, name_dev, analog_chans, "Voltage");
     % Add digital channels to session
     if ~isempty(digital_chans)
-        s_in.addDigitalChannel(name_dev, sprintf('Port0/Line%s', digital_chans), 'InputOnly'); % Much faster than 1 at a time
+        % s_in.addDigitalChannel(name_dev, sprintf('Port0/Line%s', digital_chans), 'InputOnly'); % Much faster than 1 at a time
+        addinput(s_in, name_dev, sprintf('Port0/Line%s', digital_chans), "Digital");
     end
     % Add counter channels to session
     if ~isempty(counter_chans)
-        s_in.addCounterInputChannel(name_dev, counter_chans, 'Position'); % https://www.mathworks.com/help/daq/ref/addcounterinputchannel.html
+        % s_in.addCounterInputChannel(name_dev, counter_chans, 'Position'); % https://www.mathworks.com/help/daq/ref/addcounterinputchannel.html
+        addinput(s_in, name_dev, counter_chans, "Position");
     end
 end
 
 
 %% Synchronize devices if applicable:
-% If 2 PCI/e cards are being used, then need to synchronize their clocks 
+% If 2 PCI/e cards are being used, then need to synchronize their clocks
 % (must be connected with a 34 pin ribbon (RTSI) cable inside the computer)
-% This is especially important if the channels from 1 subject 
+% This is especially important if the channels from 1 subject
 % (e.g. analog vs. digital) are split between devices)
 % http://www.mathworks.com/help/daq/examples/synchronize-ni-pci-devices-using-rtsi.html
 % Note: Must be done after adding connections
-% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem". 
+% Note: Error from Matlab: "Warning: The PCI-6225 'Dev2' does not support external triggers for the DigitalIO subsystem".
 % However, still seems to work as long as have an analog channel in use too
 % Note: USB clocks can not be synchronized in this way
 if num_pci_sync == 2
-    addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger'); 
-    addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
+    % addTriggerConnection(s_in,'Dev1/RTSI0','Dev2/RTSI0','StartTrigger');
+    % addClockConnection(s_in,'Dev1/RTSI1','Dev2/RTSI1','ScanClock');
+    addtrigger(s_in, "Digital", "StartTrigger", "Dev1/RTSI0", "Dev2/RTSI0");
+    addclock(s_in, "ScanClock", "Dev1/RTSI1", "Dev2/RTSI1");
     % s_in.Connections % shows connections
     fprintf('Synchronized PCI/e device clocks.\n');
 end
@@ -149,16 +166,3 @@ set(chans(chan_counter), 'EncoderType', 'X4'); % Default X1, res = X1 < X2 < X4.
 
 %% Finish
 fprintf('Done setting up acquisition devices.\n');
-
-%% Try to set up cameras
-if ~exist('imaqhwinfo', 'file')
-    fprintf('Image Acquisition Toolbox not found\n');
-else
-%     adaptor_info = imaqhwinfo;
-%     fprintf('%d adaptor(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(adaptor_info.InstalledAdaptors));
-    wincam_info = imaqhwinfo('winvideo');
-    fprintf('%d Windows camera device(s) found using imaqhwinfo from Image Acquisition Toolbox\n', numel(wincam_info.DeviceInfo));
-    for i_cam = 1:numel(wincam_info.DeviceInfo)
-        fprintf('%3d: %s\n', wincam_info.DeviceInfo(i_cam).DeviceID, wincam_info.DeviceInfo(i_cam).DeviceName); 
-    end
-end

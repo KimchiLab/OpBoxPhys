@@ -21,25 +21,26 @@ clf;
 % Can't pass in as argument to function, 
 % needs to be declared global outside of function before use, 
 % hence script here rather than function
-room = 'TestRoom'; % Should be char/string
+% room = 'TestRoom'; % Should be char/string
+room = '13-341'; % Should be char/string
 
 global subjects; % Need to declare before setting up listener handles, Global so that listener handles can catch changes
+global cam_global; % Need to declare before setting up listener handles, Global so that listener handles can catch changes
 
 % Go to Directory to store data
 cd(fileparts(mfilename('fullpath'))); % Start at the directory of this mfile
 addpath(pwd); % Add this directory to path, important for listener handle functions to stay accessible
 
 % Setup devices
-Fs = 1e3; % Sampling rate must be shared amongst all subjects
+Fs = 1e3; % Sampling rate must be shared amongst all subjects/devices
 s_in = OpBoxPhys_SetupDevices(Fs); % Setup all available Data Acquisition Devices
-lh = OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
+[cam_global, wincam_info, dataqueue] = OpBoxPhys_SetupCameras();
+OpBoxPhys_Start(s_in); % Prepare Listener Handles for data available events & start acquisition
 
-%%% Additional Scripts
+% Additional Scripts
 OpBox_Add; % Add Subjects after initial start
 
 
 %% Finish recording
 % OpBox_Remove;  % Remove Subject(s)
 % OpBox_Stop;  % Stop Acquisition
-
-%%% Work on loading script/function
