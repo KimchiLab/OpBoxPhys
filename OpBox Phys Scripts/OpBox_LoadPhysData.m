@@ -98,7 +98,9 @@ else
     %     fprintf('Loaded phys data from %s (%.1f sec)\n', data.filename, toc);
 
     % Set start time
-    data.dts_start = datetime(data.filename(end-18:end-4), 'InputFormat', 'yyyyMMdd-HHmmss');
+    str_path = digitsPattern(8) + "-" + digitsPattern(6);
+    temp_date_str = extract(string(data.filename), str_path); 
+    data.dts_start = datetime(temp_date_str, 'InputFormat', 'yyyyMMdd-HHmmss');
 end
 
 %% Check if there is a OpBox Cam Synch file
